@@ -1,0 +1,5 @@
+"fastapi[standard]"
+"alembic"
+"sqlalchemy"
+"pydantic_settings"
+"pydantic"
