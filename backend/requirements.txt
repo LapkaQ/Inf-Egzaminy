@@ -1,5 +1,10 @@
-"fastapi[standard]"
-"alembic"
-"sqlalchemy"
-"pydantic_settings"
-"pydantic"
+fastapi[standard]
+alembic
+sqlalchemy
+pymysql
+pydantic_settings
+pydantic
+passlib[bcrypt]
+PyJWT
+python-multipart
+email-validator
