@@ -1,10 +1,13 @@
 from fastapi import FastAPI
-from routers import auth, tutors
+from routers import auth, tutors, availability, bookings, sessions
 
 app = FastAPI()
 
 app.include_router(auth.router)
 app.include_router(tutors.router)
+app.include_router(availability.router)
+app.include_router(bookings.router)
+app.include_router(sessions.router)
 
 @app.get("/")
 def read_root():
