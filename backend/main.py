@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import auth, tutors, availability, bookings, sessions
+from routers import auth, tutors, availability, bookings, sessions, stats
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -9,6 +9,7 @@ app.include_router(tutors.router)
 app.include_router(availability.router)
 app.include_router(bookings.router)
 app.include_router(sessions.router)
+app.include_router(stats.router)
 
 @app.get("/")
 def read_root():

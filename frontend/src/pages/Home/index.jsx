@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { api } from '../../services/api';
 
 /* Reusable Tailwind strings */
 const GRAD       = 'bg-gradient-to-br from-accent to-accent-2';
@@ -50,6 +51,18 @@ const useReveal = () => {
 export const Home = () => {
   const ref = useReveal();
 
+  const [stats, setStats] = useState(null);
+  useEffect(() => {
+    api.get('/stats/').then(setStats).catch(() => {});
+  }, []);
+
+  const statsItems = [
+    { val: stats ? `${stats.active_students}+` : '…', label: 'aktywnych uczniów' },
+    { val: stats ? `${stats.pass_rate_percent}%` : '…', label: 'zdawalność egzaminów' },
+    { val: stats ? `${stats.tutors_count}+` : '…', label: 'korepetytorów' },
+    { val: stats ? `${stats.avg_tutor_rating}★` : '…', label: 'średnia ocena' },
+  ];
+
   return (
     <div ref={ref} className="bg-page text-white min-h-screen">
 
@@ -87,13 +100,8 @@ export const Home = () => {
 
             {/* Stats */}
             <div className="flex justify-center gap-16 flex-wrap pt-12 border-t border-line animate-fade-up [animation-delay:0.45s]">
-              {[
-                { val: '500+', label: 'aktywnych uczniów' },
-                { val: '97%',  label: 'zdawalność egzaminów' },
-                { val: '50+',  label: 'korepetytorów' },
-                { val: '4.9★', label: 'średnia ocena' },
-              ].map(s => (
-                <div key={s.val}>
+              {statsItems.map(s => (
+                <div key={s.label}>
                   <strong className={`block text-[2.2rem] font-black tracking-[-0.04em] ${GRAD_TEXT}`}>{s.val}</strong>
                   <span className="text-[0.82rem] text-subtle font-medium">{s.label}</span>
                 </div>
@@ -201,7 +209,7 @@ export const Home = () => {
       <section className="py-24 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_50%_50%,rgba(124,58,237,0.12)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-6xl mx-auto px-8">
-          <div className="reveal relative bg-surface border border-accent/25 rounded-3xl py-[72px] px-12 text-center overflow-hidden">
+          <div className="reveal relative bg-surface/30 border border-accent/25 rounded-3xl py-[72px] px-12 text-center overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-px bg-gradient-to-r from-transparent via-accent to-transparent opacity-50" />
             <div className={`${LABEL} mb-5`}>Zacznij już dziś</div>
             <h2 className="text-[clamp(2rem,5vw,3.2rem)] font-black tracking-[-0.05em] max-w-xl mx-auto mb-5 leading-[1.1]">
