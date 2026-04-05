@@ -5,8 +5,9 @@ import { api } from "../../services/api";
 /* Reusable Tailwind strings */
 const GRAD = "bg-gradient-to-br from-accent to-accent-2";
 const GRAD_TEXT = `${GRAD} bg-clip-text text-transparent`;
+/* Osobno od .reveal; podnoszenie: `.card-hover-lift` w index.css (tylko transform, bez animacji cienia). */
 const CARD =
-  "bg-surface border border-line rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1.5 hover:border-accent/40 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)]";
+  "card-hover-lift bg-surface border border-line rounded-2xl p-7 h-full hover:border-accent/40 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)]";
 const LABEL =
   "text-[0.72rem] font-semibold tracking-[0.12em] uppercase text-accent";
 const BTN_PRI = `inline-flex items-center gap-2 px-7 py-3.5 rounded-xl ${GRAD} text-white font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(124,58,237,0.45)]`;
@@ -274,15 +275,20 @@ export const Home = () => {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map((f, i) => (
-            <div key={f.title} className={`${CARD} reveal delay-${i + 1}`}>
-              <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-xl mb-5">
-                {f.icon}
-              </div>
-              <div className="font-bold text-[1.05rem] tracking-[-0.02em] mb-2.5">
-                {f.title}
-              </div>
-              <div className="text-[0.875rem] text-subtle leading-[1.7]">
-                {f.desc}
+            <div
+              key={f.title}
+              className={`reveal delay-${i + 1} h-full min-h-0`}
+            >
+              <div className={CARD}>
+                <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-xl mb-5">
+                  {f.icon}
+                </div>
+                <div className="font-bold text-[1.05rem] tracking-[-0.02em] mb-2.5">
+                  {f.title}
+                </div>
+                <div className="text-[0.875rem] text-subtle leading-[1.7]">
+                  {f.desc}
+                </div>
               </div>
             </div>
           ))}
@@ -327,22 +333,27 @@ export const Home = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {TESTIMONIALS.map((t, i) => (
-            <div key={t.name} className={`${CARD} reveal delay-${i + 1}`}>
-              <div className="flex gap-0.5 text-amber-400 text-sm mb-4">
-                ★★★★★
-              </div>
-              <p className="text-[0.92rem] text-subtle leading-[1.75] mb-5">
-                "{t.text}"
-              </p>
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-9 h-9 rounded-full ${GRAD} flex items-center justify-center text-white text-xs font-bold shrink-0`}
-                >
-                  {t.init}
+            <div
+              key={t.name}
+              className={`reveal delay-${i + 1} h-full min-h-0`}
+            >
+              <div className={CARD}>
+                <div className="flex gap-0.5 text-amber-400 text-sm mb-4">
+                  ★★★★★
                 </div>
-                <div>
-                  <div className="text-[0.87rem] font-semibold">{t.name}</div>
-                  <div className="text-[0.78rem] text-subtle">{t.role}</div>
+                <p className="text-[0.92rem] text-subtle leading-[1.75] mb-5">
+                  "{t.text}"
+                </p>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-9 h-9 rounded-full ${GRAD} flex items-center justify-center text-white text-xs font-bold shrink-0`}
+                  >
+                    {t.init}
+                  </div>
+                  <div>
+                    <div className="text-[0.87rem] font-semibold">{t.name}</div>
+                    <div className="text-[0.78rem] text-subtle">{t.role}</div>
+                  </div>
                 </div>
               </div>
             </div>
