@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import Optional
 from services.user_service import add_tutor, remove_tutor, get_all_tutors, create_tutor_profile, update_tutor_profile, get_tutor_by_id
 
 from models.user import User
@@ -10,6 +11,8 @@ from core.security import get_current_user
 
 router = APIRouter(prefix="/tutors", tags=["Tutors"])
 
+class TutorUserResponse(UserResponse):
+    tutor_profile: Optional[TutorProfileResponse] = None
 
 @router.post("/add", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def add_tutor_endpoint(
@@ -27,7 +30,7 @@ def remove_tutor_endpoint(
 ):
     return remove_tutor(user_id, db, current_user)
 
-@router.get("/all", response_model=list[UserResponse], status_code=status.HTTP_200_OK)
+@router.get("/all", response_model=list[TutorUserResponse], status_code=status.HTTP_200_OK)
 def get_all_tutors_endpoint(
     db: Session = Depends(get_db)):
     return get_all_tutors(db)

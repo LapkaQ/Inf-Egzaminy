@@ -1,144 +1,144 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { api } from "../../services/api";
+import React, { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { api } from '../../services/api'
 
 /* Reusable Tailwind strings */
-const GRAD = "bg-gradient-to-br from-accent to-accent-2";
-const GRAD_TEXT = `${GRAD} bg-clip-text text-transparent`;
+const GRAD = 'bg-gradient-to-br from-accent to-accent-2'
+const GRAD_TEXT = `${GRAD} bg-clip-text text-transparent`
 /* Osobno od .reveal; podnoszenie: `.card-hover-lift` w index.css (tylko transform, bez animacji cienia). */
 const CARD =
-  "card-hover-lift bg-surface border border-line rounded-2xl p-7 h-full hover:border-accent/40 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)]";
+  'card-hover-lift bg-surface border border-line rounded-2xl p-7 h-full hover:border-accent/40 hover:shadow-[0_24px_60px_rgba(0,0,0,0.4)]'
 const LABEL =
-  "text-[0.72rem] font-semibold tracking-[0.12em] uppercase text-accent";
-const BTN_PRI = `inline-flex items-center gap-2 px-7 py-3.5 rounded-xl ${GRAD} text-white font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(124,58,237,0.45)]`;
+  'text-[0.72rem] font-semibold tracking-[0.12em] uppercase text-accent'
+const BTN_PRI = `inline-flex items-center gap-2 px-7 py-3.5 rounded-xl ${GRAD} text-white font-semibold text-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(124,58,237,0.45)]`
 const BTN_OUT =
-  "inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-line-hi text-subtle font-medium text-sm transition-all duration-200 hover:text-white hover:border-white/20 hover:bg-white/[0.04] hover:-translate-y-0.5";
+  'inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border border-line-hi text-subtle font-medium text-sm transition-all duration-200 hover:text-white hover:border-white/20 hover:bg-white/[0.04] hover:-translate-y-0.5'
 const TAG =
-  "px-2.5 py-1 bg-surface-3 border border-line-hi rounded-md text-[0.73rem] text-subtle font-medium";
+  'px-2.5 py-1 bg-surface-3 border border-line-hi rounded-md text-[0.73rem] text-subtle font-medium'
 
 const FEATURES = [
   {
-    icon: "🎯",
-    title: "INF.03 i INF.04",
-    desc: "Specjalizujemy się wyłącznie w egzaminach zawodowych z kwalifikacji informatycznych technika informatyka.",
+    icon: '🎯',
+    title: 'INF.03 i INF.04',
+    desc: 'Specjalizujemy się wyłącznie w egzaminach zawodowych z kwalifikacji informatycznych technika informatyka.',
   },
   {
-    icon: "👤",
-    title: "Indywidualne podejście",
-    desc: "Każdy uczeń jest inny. Korepetytor dostosuje tempo i zakres materiału do Twoich potrzeb.",
+    icon: '👤',
+    title: 'Indywidualne podejście',
+    desc: 'Każdy uczeń jest inny. Korepetytor dostosuje tempo i zakres materiału do Twoich potrzeb.',
   },
   {
-    icon: "📅",
-    title: "Elastyczny kalendarz",
-    desc: "Rezerwuj lekcje kiedy chcesz. System kalendarza online z zarządzaniem dostępnością korepetytora.",
+    icon: '📅',
+    title: 'Elastyczny kalendarz',
+    desc: 'Rezerwuj lekcje kiedy chcesz. System kalendarza online z zarządzaniem dostępnością korepetytora.',
   },
   {
-    icon: "✅",
-    title: "Weryfikowani korepetytorzy",
-    desc: "Każdy korepetytor posiada udokumentowane doświadczenie i wysoką zdawalność swoich uczniów.",
+    icon: '✅',
+    title: 'Weryfikowani korepetytorzy',
+    desc: 'Każdy korepetytor posiada udokumentowane doświadczenie i wysoką zdawalność swoich uczniów.',
   },
   {
-    icon: "💬",
-    title: "Feedback po lekcji",
-    desc: "Po każdej sesji otrzymasz podsumowanie postępów i wskazówki do dalszej nauki.",
+    icon: '💬',
+    title: 'Feedback po lekcji',
+    desc: 'Po każdej sesji otrzymasz podsumowanie postępów i wskazówki do dalszej nauki.',
   },
   {
-    icon: "🔐",
-    title: "Bezpieczna platforma",
-    desc: "Transparentne płatności, bezpieczne dane i wygodna komunikacja w jednym miejscu.",
+    icon: '🔐',
+    title: 'Bezpieczna platforma',
+    desc: 'Transparentne płatności, bezpieczne dane i wygodna komunikacja w jednym miejscu.',
   },
-];
+]
 
 const STEPS = [
   {
-    n: "01",
-    title: "Znajdź korepetytora",
-    desc: "Przeglądaj profile i wybierz specjalistę od INF.03 lub INF.04, który pasuje Ci stylem.",
+    n: '01',
+    title: 'Znajdź korepetytora',
+    desc: 'Przeglądaj profile i wybierz specjalistę od INF.03 lub INF.04, który pasuje Ci stylem.',
   },
   {
-    n: "02",
-    title: "Zarezerwuj termin",
-    desc: "Wybierz wolny slot z kalendarza korepetytora i potwierdź rezerwację jednym kliknięciem.",
+    n: '02',
+    title: 'Zarezerwuj termin',
+    desc: 'Wybierz wolny slot z kalendarza korepetytora i potwierdź rezerwację jednym kliknięciem.',
   },
   {
-    n: "03",
-    title: "Ucz się i zdawaj",
-    desc: "Odbywaj lekcje, ćwicz materiał i monitoruj postępy aż do dnia egzaminu.",
+    n: '03',
+    title: 'Ucz się i zdawaj',
+    desc: 'Odbywaj lekcje, ćwicz materiał i monitoruj postępy aż do dnia egzaminu.',
   },
   {
-    n: "04",
-    title: "Zdaj za 1. razem",
-    desc: "Nasi absolwenci osiągają zdawalność powyżej 97%. Twoja kolej.",
+    n: '04',
+    title: 'Zdaj za 1. razem',
+    desc: 'Nasi absolwenci osiągają zdawalność powyżej 97%. Twoja kolej.',
   },
-];
+]
 
 const TESTIMONIALS = [
   {
-    name: "Kacper M.",
-    role: "Zdał INF.03 — 91%",
-    text: "Dzięki korepetycjom z Pawłem zrozumiałem sieci w 2 tygodnie. Egzamin poszedł mi lepiej niż kiedykolwiek się spodziewałem.",
-    init: "KM",
+    name: 'Kacper M.',
+    role: 'Zdał INF.03 — 91%',
+    text: 'Dzięki korepetycjom z Pawłem zrozumiałem sieci w 2 tygodnie. Egzamin poszedł mi lepiej niż kiedykolwiek się spodziewałem.',
+    init: 'KM',
   },
   {
-    name: "Zuzanna R.",
-    role: "Zdała INF.04 — 88%",
-    text: "Wcześniej bałam się Pythona. Korepetytor pokazał mi, że to prostsze niż myślałam. Teraz piszę skrypty w kilka minut.",
-    init: "ZR",
+    name: 'Zuzanna R.',
+    role: 'Zdała INF.04 — 88%',
+    text: 'Wcześniej bałam się Pythona. Korepetytor pokazał mi, że to prostsze niż myślałam. Teraz piszę skrypty w kilka minut.',
+    init: 'ZR',
   },
   {
-    name: "Michał T.",
-    role: "Zdał INF.03 i INF.04",
-    text: "Platforma jest super wygodna. Znalazłem korepetytora, zarezerwowałem termin i już na pierwszej lekcji wiedziałem, że to był dobry wybór.",
-    init: "MT",
+    name: 'Michał T.',
+    role: 'Zdał INF.03 i INF.04',
+    text: 'Platforma jest super wygodna. Znalazłem korepetytora, zarezerwowałem termin i już na pierwszej lekcji wiedziałem, że to był dobry wybór.',
+    init: 'MT',
   },
-];
+]
 
 const useReveal = () => {
-  const ref = useRef(null);
+  const ref = useRef(null)
   useEffect(() => {
-    const root = ref.current;
-    if (!root) return;
+    const root = ref.current
+    if (!root) return
     const obs = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("visible");
-            obs.unobserve(e.target);
+            e.target.classList.add('visible')
+            obs.unobserve(e.target)
           }
         }),
       { threshold: 0.06 },
-    );
+    )
     root
-      .querySelectorAll(".reveal, .reveal-left, .reveal-right, .reveal-scale")
-      .forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-  return ref;
-};
+      .querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale')
+      .forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
+  return ref
+}
 
 export const Home = () => {
-  const ref = useReveal();
+  const ref = useReveal()
 
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState(null)
   useEffect(() => {
     api
-      .get("/stats/")
+      .get('/stats/')
       .then(setStats)
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+  }, [])
 
   const statsItems = [
     {
-      val: stats ? `${stats.active_students}+` : "…",
-      label: "aktywnych uczniów",
+      val: stats ? `${stats.active_students}+` : '…',
+      label: 'aktywnych uczniów',
     },
     {
-      val: stats ? `${stats.pass_rate_percent}%` : "…",
-      label: "zdawalność egzaminów",
+      val: stats ? `${stats.pass_rate_percent}%` : '…',
+      label: 'zdawalność egzaminów',
     },
-    { val: stats ? `${stats.tutors_count}+` : "…", label: "korepetytorów" },
-    { val: stats ? `${stats.avg_tutor_rating}★` : "…", label: "średnia ocena" },
-  ];
+    { val: stats ? `${stats.tutors_count}+` : '…', label: 'korepetytorów' },
+    { val: stats ? `${stats.avg_tutor_rating}★` : '…', label: 'średnia ocena' },
+  ]
 
   return (
     <div ref={ref} className="bg-page text-white min-h-screen">
@@ -217,21 +217,21 @@ export const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[
             {
-              num: "03",
-              label: "Kwalifikacja INF.03",
+              num: '03',
+              label: 'Kwalifikacja INF.03',
               title:
-                "Tworzenie i administrowanie stronami i aplikacjami WWW oraz bazami danych",
-              desc: "HTML, CSS, JavaScript, PHP, SQL, MySQL, systemy CMS. Część praktyczna i teoretyczna.",
-              tags: ["HTML/CSS", "JavaScript", "PHP", "MySQL", "CMS", "Sieci"],
-              side: "reveal-left",
+                'Tworzenie i administrowanie stronami i aplikacjami WWW oraz bazami danych',
+              desc: 'HTML, CSS, JavaScript, PHP, SQL, MySQL, systemy CMS. Część praktyczna i teoretyczna.',
+              tags: ['HTML/CSS', 'JavaScript', 'PHP', 'MySQL', 'CMS', 'Sieci'],
+              side: 'reveal-left',
             },
             {
-              num: "04",
-              label: "Kwalifikacja INF.04",
-              title: "Projektowanie, programowanie i testowanie aplikacji",
-              desc: "Python, Java, C++, algorytmy, bazy danych, wzorce projektowe, testowanie kodu.",
-              tags: ["Python", "Java", "C++", "Algorytmy", "OOP", "Testowanie"],
-              side: "reveal-right",
+              num: '04',
+              label: 'Kwalifikacja INF.04',
+              title: 'Projektowanie, programowanie i testowanie aplikacji',
+              desc: 'Python, Java, C++, algorytmy, bazy danych, wzorce projektowe, testowanie kodu.',
+              tags: ['Python', 'Java', 'C++', 'Algorytmy', 'OOP', 'Testowanie'],
+              side: 'reveal-right',
             },
           ].map((e) => (
             // Gradient border: outer div with gradient bg + p-px, inner div with surface bg
@@ -268,7 +268,7 @@ export const Home = () => {
       {/* ── FEATURES ────────────────────────────────────────────────────── */}
       <section className="py-24 max-w-6xl mx-auto px-8">
         <div className="reveal mb-14 max-w-[520px]">
-          <div className={`${LABEL} mb-3`}>Dlaczego KorkiINF?</div>
+          <div className={`${LABEL} mb-3`}>Dlaczego KorINF?</div>
           <h2 className="text-[clamp(1.8rem,4vw,2.6rem)] font-black tracking-[-0.04em] leading-[1.15]">
             Wszystko czego potrzebujesz do zdania egzaminu
           </h2>
@@ -404,7 +404,7 @@ export const Home = () => {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
                   K
                 </div>
-                KorkiINF
+                KorINF
               </div>
               <p className="text-sm text-subtle leading-[1.7] max-w-[280px]">
                 Platforma korepetycji skupiona wyłącznie na egzaminach
@@ -413,27 +413,27 @@ export const Home = () => {
             </div>
             {[
               {
-                title: "Platforma",
+                title: 'Platforma',
                 links: [
-                  { label: "Korepetytorzy", to: "/tutors" },
-                  { label: "Zarejestruj się", to: "/register" },
-                  { label: "Zaloguj się", to: "/login" },
+                  { label: 'Korepetytorzy', to: '/tutors' },
+                  { label: 'Zarejestruj się', to: '/register' },
+                  { label: 'Zaloguj się', to: '/login' },
                 ],
               },
               {
-                title: "Egzaminy",
+                title: 'Egzaminy',
                 links: [
-                  { label: "INF.03", to: "#" },
-                  { label: "INF.04", to: "#" },
-                  { label: "Materiały", to: "#" },
+                  { label: 'INF.03', to: '#' },
+                  { label: 'INF.04', to: '#' },
+                  { label: 'Materiały', to: '#' },
                 ],
               },
               {
-                title: "Kontakt",
+                title: 'Kontakt',
                 links: [
-                  { label: "kontakt@korkiinf.pl", to: "#" },
-                  { label: "FAQ", to: "#" },
-                  { label: "Regulamin", to: "#" },
+                  { label: 'kontakt@KorINF.pl', to: '#' },
+                  { label: 'FAQ', to: '#' },
+                  { label: 'Regulamin', to: '#' },
                 ],
               },
             ].map((col) => (
@@ -454,13 +454,13 @@ export const Home = () => {
             ))}
           </div>
           <div className="flex items-center justify-between flex-wrap gap-3 pt-8 border-t border-line text-[0.8rem] text-faint">
-            <span>© 2025 KorkiINF. Wszelkie prawa zastrzeżone.</span>
-            <span>Zbudowane z ❤️ dla uczniów technikum informatycznego</span>
+            <span>© 2026 KorINF. Wszelkie prawa zastrzeżone.</span>
+            <span>by lapkaq</span>
           </div>
         </div>
       </footer>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

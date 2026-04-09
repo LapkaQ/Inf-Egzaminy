@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from models.user import User, UserRole
 from models.tutor import TutorProfile, TutorSubject
 from fastapi import HTTPException, status
@@ -42,11 +42,13 @@ def remove_tutor(user_id: int, db: Session, current_user: User):
 
 
 def get_all_tutors(db: Session):
-    return db.query(User).filter(User.role == UserRole.tutor).all()
+    return db.query(User).options(
+        joinedload(User.tutor_profile).joinedload(TutorProfile.subjects)
+    ).filter(User.role == UserRole.tutor).all()
 
 
 def get_tutor_by_id(db: Session, user_id: int):
-    user = db.query(User).filter(User.id == user_id).first()
+    user = db.query(User).options(joinedload(User.tutor_profile)).filter(User.id == user_id).first()
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
