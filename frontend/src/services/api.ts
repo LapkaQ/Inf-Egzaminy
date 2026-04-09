@@ -18,6 +18,13 @@ export const api = {
       body: JSON.stringify(data),
     }),
 
+  put: (url: string, data: unknown) =>
+    request(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
+
   delete: (url: string) => request(url, { method: 'DELETE' }),
 
   postForm: (url: string, data: URLSearchParams) =>

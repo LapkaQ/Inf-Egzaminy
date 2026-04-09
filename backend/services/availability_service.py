@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, exists
 from fastapi import HTTPException, status
 from datetime import datetime
 
 from models.availability import AvailabilitySlot
+from models.booking import Booking, BookingStatus
 from models.tutor import TutorProfile, TutorSubject
 from models.user import User, UserRole
 from schemas.availability import AvailabilitySlotCreate
@@ -25,11 +26,25 @@ def _get_tutor_profile_or_403(db: Session, user: User) -> TutorProfile:
     return tutor_profile
 
 
+def _not_booked_filter(tutor_profile_id: int):
+    """
+    Returns a filter condition that excludes slots which already have 
+    an active (non-cancelled) booking for the given tutor.
+    """
+    profile = TutorProfile.__table__.alias()
+    return ~exists(
+        Booking.__table__.select().where(
+            (Booking.start_time == AvailabilitySlot.start_time) &
+            (Booking.end_time == AvailabilitySlot.end_time) &
+            (Booking.status != BookingStatus.cancelled)
+        ).correlate(AvailabilitySlot)
+    )
+
+
 def add_availability_slot(db: Session, current_user: User, slot_data: AvailabilitySlotCreate) -> AvailabilitySlot:
     tutor_profile = _get_tutor_profile_or_403(db, current_user)
 
     # Check for overlapping slots
-    # Overlap condition: new_start < old_end AND new_end > old_start
     overlapping_slot = db.query(AvailabilitySlot).filter(
         AvailabilitySlot.tutor_id == tutor_profile.id,
         AvailabilitySlot.end_time > slot_data.start_time,
@@ -54,11 +69,29 @@ def add_availability_slot(db: Session, current_user: User, slot_data: Availabili
 
 
 def get_tutor_availability(db: Session, tutor_profile_id: int):
-    # This might be public for students viewing a calendar
+    """Public endpoint for students — returns only UNBOOKED future slots."""
     now_utc = datetime.utcnow()
+    
+    # Get tutor's user_id for booking check
+    profile = db.query(TutorProfile).filter(TutorProfile.id == tutor_profile_id).first()
+    if not profile:
+        return []
+    
+    # Subquery: IDs of slots that have an active booking
+    booked_slot_ids = db.query(AvailabilitySlot.id).join(
+        Booking,
+        (Booking.tutor_id == profile.user_id) &
+        (Booking.start_time == AvailabilitySlot.start_time) &
+        (Booking.end_time == AvailabilitySlot.end_time) &
+        (Booking.status != BookingStatus.cancelled)
+    ).filter(
+        AvailabilitySlot.tutor_id == tutor_profile_id
+    ).subquery()
+    
     slots = db.query(AvailabilitySlot).filter(
         AvailabilitySlot.tutor_id == tutor_profile_id,
-        AvailabilitySlot.end_time >= now_utc # Return only future slots
+        AvailabilitySlot.end_time >= now_utc,
+        ~AvailabilitySlot.id.in_(booked_slot_ids)
     ).order_by(AvailabilitySlot.start_time).all()
     return slots
 
@@ -68,6 +101,7 @@ def search_availability(
     tutor_profile_id: Optional[int] = None, 
     subject: Optional[str] = None
 ):
+    """Search available (unbooked) slots."""
     now_utc = datetime.utcnow()
     
     query = db.query(AvailabilitySlot).filter(AvailabilitySlot.end_time >= now_utc)
@@ -79,6 +113,14 @@ def search_availability(
         query = query.join(TutorProfile, AvailabilitySlot.tutor_id == TutorProfile.id)
         query = query.join(TutorSubject, TutorSubject.tutor_profile_id == TutorProfile.id)
         query = query.filter(TutorSubject.name == subject)
+    
+    # Exclude slots with active bookings (join via tutor user_id + time match)
+    query = query.outerjoin(
+        Booking,
+        (Booking.start_time == AvailabilitySlot.start_time) &
+        (Booking.end_time == AvailabilitySlot.end_time) &
+        (Booking.status != BookingStatus.cancelled)
+    ).filter(Booking.id == None)
         
     return query.order_by(AvailabilitySlot.start_time).all()
 

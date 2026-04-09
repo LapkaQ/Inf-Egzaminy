@@ -1,24 +1,10 @@
 from fastapi import FastAPI
-from routers import auth, tutors, availability, bookings, sessions, stats
+from routers import auth, tutors, availability, bookings, sessions, stats, schedule
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+app = FastAPI(title="KorkiINF API", version="1.0.0")
 
-app.include_router(auth.router)
-app.include_router(tutors.router)
-app.include_router(availability.router)
-app.include_router(bookings.router)
-app.include_router(sessions.router)
-app.include_router(stats.router)
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
-
+# CORS must be added BEFORE routers
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"], 
@@ -26,3 +12,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth.router)
+app.include_router(tutors.router)
+app.include_router(availability.router)
+app.include_router(bookings.router)
+app.include_router(sessions.router)
+app.include_router(stats.router)
+app.include_router(schedule.router)

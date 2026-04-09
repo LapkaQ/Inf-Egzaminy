@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from fastapi import HTTPException, status
 import uuid
@@ -63,7 +63,9 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
 
 def get_my_bookings(db: Session, current_user: User):
     """Pobiera rezerwacje zalogowanego użytkownika (zarówno jako uczeń i jako nauczyciel)"""
-    return db.query(Booking).filter(
+    return db.query(Booking).options(
+        joinedload(Booking.session)
+    ).filter(
         or_(
             Booking.student_id == current_user.id,
             Booking.tutor_id == current_user.id

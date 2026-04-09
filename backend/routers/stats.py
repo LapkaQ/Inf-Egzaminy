@@ -35,6 +35,6 @@ def get_stats(db: Session = Depends(get_db)):
     return {
         "active_students": active_students,
         "tutors_count": tutors_count,
-        "pass_rate_percent": 97.5,
-        "avg_tutor_rating": 4.9,
+        "pass_rate_percent": pass_rate,
+        "avg_tutor_rating": avg_rating,
     }

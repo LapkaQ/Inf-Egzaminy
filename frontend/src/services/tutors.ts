@@ -48,3 +48,19 @@ export const createTutorProfile = (bio: string, price_per_hour: number, subjects
 // PATCH /tutors/profile — zaktualizuj profil tutora
 export const updateTutorProfile = (data: { bio?: string; price_per_hour?: number; subjects?: string[] }) =>
   api.patch('/tutors/profile', data);
+
+// ── Weekly Schedule ──
+
+// GET /schedule/weekly — pobierz swój tygodniowy harmonogram
+export const getMyWeeklySchedule = () => api.get('/schedule/weekly');
+
+// PUT /schedule/weekly — ustaw tygodniowy harmonogram
+export const setWeeklySchedule = (days: { day_of_week: number; slots: { start_time: string; end_time: string }[] }[]) =>
+  api.put('/schedule/weekly', { days });
+
+// GET /schedule/weekly/{tutor_profile_id} — publiczny harmonogram tutora
+export const getTutorWeeklySchedule = (tutorProfileId: number) =>
+  api.get(`/schedule/weekly/${tutorProfileId}`);
+
+// POST /schedule/regenerate — odśwież wygenerowane sloty
+export const regenerateSlots = () => api.post('/schedule/regenerate', {});

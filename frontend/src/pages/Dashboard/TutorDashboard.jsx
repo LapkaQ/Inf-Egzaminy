@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  getMyBookings, getMySlots, addSlot, deleteSlot,
-  createTutorProfile, updateTutorProfile, getTutorById
+  getMyBookings, getMySlots, deleteSlot,
+  createTutorProfile, updateTutorProfile, getTutorById,
+  getMyWeeklySchedule, setWeeklySchedule,
 } from '../../services/tutors';
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2';
@@ -20,9 +21,209 @@ const formatDt = (iso) => {
   };
 };
 
-// Format datetime-local input value to ISO string
-const toIso = (val) => new Date(val).toISOString();
+const DAYS = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+const DAYS_SHORT = ['Pon', 'Wt', 'Śr', 'Czw', 'Pt', 'Sob', 'Nd'];
+const HOURS = Array.from({ length: 14 }, (_, i) => i + 8); // 8:00 – 21:00
 
+/** Convert hour index to "HH:00" string */
+const hourStr = (h) => `${String(h).padStart(2, '0')}:00`;
+const timeStr = (h) => `${String(h).padStart(2, '0')}:00:00`; // for API
+
+// ─── Weekly Schedule Builder Component ───
+const WeeklyScheduleBuilder = ({ schedule, setSchedule, onSave, saving, saveMsg, saveError }) => {
+  // schedule is a Map<dayOfWeek, Set<hour>>
+  const [dragging, setDragging] = useState(false);
+  const [dragMode, setDragMode] = useState(null); // 'add' or 'remove'
+
+  const isSelected = (day, hour) => schedule.get(day)?.has(hour) ?? false;
+
+  const toggleCell = useCallback((day, hour, forceMode = null) => {
+    setSchedule(prev => {
+      const next = new Map(prev);
+      const daySet = new Set(next.get(day) || []);
+      const mode = forceMode ?? (daySet.has(hour) ? 'remove' : 'add');
+      if (mode === 'add') {
+        daySet.add(hour);
+      } else {
+        daySet.delete(hour);
+      }
+      next.set(day, daySet);
+      return next;
+    });
+  }, [setSchedule]);
+
+  const handleMouseDown = (day, hour) => {
+    const mode = isSelected(day, hour) ? 'remove' : 'add';
+    setDragMode(mode);
+    setDragging(true);
+    toggleCell(day, hour, mode);
+  };
+
+  const handleMouseEnter = (day, hour) => {
+    if (dragging && dragMode) {
+      toggleCell(day, hour, dragMode);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    setDragMode(null);
+  };
+
+  // Attach global mouseup listener for drag outside grid
+  useEffect(() => {
+    const up = () => { setDragging(false); setDragMode(null); };
+    window.addEventListener('mouseup', up);
+    return () => window.removeEventListener('mouseup', up);
+  }, []);
+
+  const clearAll = () => setSchedule(new Map());
+
+  const totalHours = [...schedule.values()].reduce((sum, set) => sum + set.size, 0);
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="font-bold text-[1.1rem]">Tygodniowy harmonogram</h2>
+          <p className="text-[0.82rem] text-subtle mt-1">
+            Kliknij lub przeciągnij po siatce, aby zaznaczyć godziny Twojej dostępności. 
+            System automatycznie wygeneruje terminy na najbliższe 4 tygodnie.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-[0.78rem] text-subtle">
+            <strong className="text-white">{totalHours}</strong> godz. / tydzień
+          </span>
+          <button
+            onClick={clearAll}
+            className="px-3 py-1.5 rounded-lg border border-line-hi text-subtle text-[0.75rem] font-medium cursor-pointer bg-transparent font-sans hover:text-red-400 hover:border-red-400/30 transition-all duration-200"
+          >
+            Wyczyść
+          </button>
+        </div>
+      </div>
+
+      {/* Grid */}
+      <div className="bg-surface border border-line rounded-2xl p-5 overflow-x-auto">
+        <div
+          className="grid select-none"
+          style={{
+            gridTemplateColumns: '56px repeat(7, 1fr)',
+            gridTemplateRows: `auto repeat(${HOURS.length}, 1fr)`,
+            gap: '2px',
+          }}
+          onMouseUp={handleMouseUp}
+        >
+          {/* Header: empty corner + day names */}
+          <div />
+          {DAYS_SHORT.map((d, i) => (
+            <div key={i} className="text-center text-[0.7rem] font-semibold text-subtle py-2 uppercase tracking-wider">
+              {d}
+            </div>
+          ))}
+
+          {/* Rows: hour label + cells */}
+          {HOURS.map(hour => (
+            <React.Fragment key={hour}>
+              <div className="text-[0.7rem] text-faint font-medium pr-2 flex items-center justify-end">
+                {hourStr(hour)}
+              </div>
+              {Array.from({ length: 7 }, (_, day) => {
+                const selected = isSelected(day, hour);
+                return (
+                  <div
+                    key={`${day}-${hour}`}
+                    onMouseDown={() => handleMouseDown(day, hour)}
+                    onMouseEnter={() => handleMouseEnter(day, hour)}
+                    className={`
+                      h-9 rounded-lg cursor-pointer transition-all duration-150
+                      ${selected
+                        ? 'bg-accent/80 border border-accent/60 shadow-[0_0_12px_rgba(124,58,237,0.25)]'
+                        : 'bg-surface-2 border border-line hover:bg-surface-3 hover:border-line-hi'
+                      }
+                    `}
+                    title={`${DAYS[day]} ${hourStr(hour)} – ${hourStr(hour + 1)}`}
+                  />
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* Legend + Save */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-4 text-[0.75rem] text-subtle">
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded bg-accent/80 border border-accent/60" />
+            <span>Dostępny</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3.5 h-3.5 rounded bg-surface-2 border border-line" />
+            <span>Niedostępny</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {saveMsg && <span className="text-green-400 text-sm font-medium">{saveMsg}</span>}
+          {saveError && <span className="text-red-400 text-sm font-medium">{saveError}</span>}
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className={`px-8 py-3 rounded-xl ${GRAD} text-white font-semibold text-sm cursor-pointer border-0 font-sans transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.35)] ${saving ? 'opacity-60' : ''}`}
+          >
+            {saving ? 'Zapisywanie...' : 'Zapisz harmonogram'}
+          </button>
+        </div>
+      </div>
+
+      {/* Day summaries */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+        {DAYS.map((day, i) => {
+          const hours = schedule.get(i);
+          const count = hours?.size || 0;
+          const sorted = hours ? [...hours].sort((a, b) => a - b) : [];
+          // Group consecutive hours into ranges
+          const ranges = [];
+          if (sorted.length > 0) {
+            let start = sorted[0];
+            let end = sorted[0];
+            for (let j = 1; j < sorted.length; j++) {
+              if (sorted[j] === end + 1) {
+                end = sorted[j];
+              } else {
+                ranges.push(`${hourStr(start)}–${hourStr(end + 1)}`);
+                start = sorted[j];
+                end = sorted[j];
+              }
+            }
+            ranges.push(`${hourStr(start)}–${hourStr(end + 1)}`);
+          }
+
+          return (
+            <div key={i} className={`rounded-xl p-3 border transition-all duration-200 ${count > 0 ? 'bg-accent/5 border-accent/20' : 'bg-surface border-line'}`}>
+              <div className="text-[0.72rem] font-semibold text-subtle uppercase tracking-wider mb-1">{DAYS_SHORT[i]}</div>
+              {count > 0 ? (
+                <>
+                  <div className="text-white text-sm font-bold">{count}h</div>
+                  <div className="text-[0.68rem] text-subtle mt-0.5 leading-tight">
+                    {ranges.join(', ')}
+                  </div>
+                </>
+              ) : (
+                <div className="text-faint text-xs">Wolne</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+
+// ─── Main TutorDashboard Component ───
 export const TutorDashboard = () => {
   const { user } = useAuth();
 
@@ -32,11 +233,13 @@ export const TutorDashboard = () => {
   const [loading, setLoading]       = useState(true);
   const [tab, setTab]               = useState('Przegląd');
 
-  // Slot form
-  const [slotStart, setSlotStart]   = useState('');
-  const [slotEnd, setSlotEnd]       = useState('');
-  const [slotError, setSlotError]   = useState('');
-  const [slotLoading, setSlotLoading] = useState(false);
+  // Weekly schedule
+  const [schedule, setSchedule]     = useState(new Map()); // Map<dayOfWeek, Set<hour>>
+  const [schedSaving, setSchedSaving] = useState(false);
+  const [schedMsg, setSchedMsg]     = useState('');
+  const [schedError, setSchedError] = useState('');
+
+  // Slot management
   const [deletingId, setDeletingId] = useState(null);
 
   // Profile form
@@ -52,28 +255,72 @@ export const TutorDashboard = () => {
       getMyBookings().catch(() => []),
       getMySlots().catch(() => []),
       getTutorById(user?.id).catch(() => null),
-    ]).then(([b, s, p]) => {
+      getMyWeeklySchedule().catch(() => ({ days: [] })),
+    ]).then(([b, s, p, ws]) => {
       setBookings(b);
       setSlots(s);
       setProfile(p);
       if (p) { setBio(p.bio || ''); setPrice(p.price_per_hour || ''); setSubjects(p.subjects?.map(s => s.name) || []); }
+
+      // Convert weekly schedule API response to Map<day, Set<hour>>
+      const map = new Map();
+      if (ws?.days) {
+        for (const day of ws.days) {
+          const hourSet = new Set();
+          for (const slot of day.slots) {
+            // Parse "HH:MM:SS" to hours
+            const startH = parseInt(slot.start_time.split(':')[0], 10);
+            const endH = parseInt(slot.end_time.split(':')[0], 10);
+            for (let h = startH; h < endH; h++) {
+              hourSet.add(h);
+            }
+          }
+          map.set(day.day_of_week, hourSet);
+        }
+      }
+      setSchedule(map);
     }).finally(() => setLoading(false));
   }, [user?.id]);
 
-  // ── Slot handlers ──
-  const handleAddSlot = async (e) => {
-    e.preventDefault();
-    setSlotError('');
-    if (!slotStart || !slotEnd) return setSlotError('Podaj oba terminy.');
-    if (new Date(slotStart) >= new Date(slotEnd)) return setSlotError('Czas zakończenia musi być po czasie rozpoczęcia.');
-    setSlotLoading(true);
+  // ── Schedule save handler ──
+  const handleSaveSchedule = async () => {
+    setSchedMsg(''); setSchedError('');
+    setSchedSaving(true);
     try {
-      const newSlot = await addSlot(toIso(slotStart), toIso(slotEnd));
-      setSlots(prev => [...prev, newSlot]);
-      setSlotStart(''); setSlotEnd('');
+      // Convert Map<day, Set<hour>> to API format
+      // Group consecutive hours into time ranges per day
+      const days = [];
+      for (const [dayOfWeek, hourSet] of schedule) {
+        if (hourSet.size === 0) continue;
+        const sorted = [...hourSet].sort((a, b) => a - b);
+        const slots = [];
+        let start = sorted[0];
+        let end = sorted[0];
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i] === end + 1) {
+            end = sorted[i];
+          } else {
+            slots.push({ start_time: timeStr(start), end_time: timeStr(end + 1) });
+            start = sorted[i];
+            end = sorted[i];
+          }
+        }
+        slots.push({ start_time: timeStr(start), end_time: timeStr(end + 1) });
+        days.push({ day_of_week: dayOfWeek, slots });
+      }
+
+      await setWeeklySchedule(days);
+
+      // Refresh slots from server
+      const newSlots = await getMySlots().catch(() => []);
+      setSlots(newSlots);
+
+      setSchedMsg('Harmonogram zapisany! Sloty wygenerowane na 4 tygodnie.');
+      setTimeout(() => setSchedMsg(''), 5000);
     } catch (e) {
-      setSlotError(e.message || 'Nie udało się dodać slotu.');
-    } finally { setSlotLoading(false); }
+      setSchedError(e.message || 'Nie udało się zapisać harmonogramu.');
+      setTimeout(() => setSchedError(''), 5000);
+    } finally { setSchedSaving(false); }
   };
 
   const handleDeleteSlot = async (id) => {
@@ -107,7 +354,7 @@ export const TutorDashboard = () => {
 
   const upcoming  = bookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed' && new Date(b.start_time) > new Date());
   const futureSlots = slots.filter(s => new Date(s.start_time) > new Date());
-  const TABS = ['Przegląd', 'Terminy', 'Profil'];
+  const TABS = ['Przegląd', 'Harmonogram', 'Terminy', 'Profil'];
 
   return (
     <div className="min-h-screen bg-page text-white pt-[90px]">
@@ -164,28 +411,54 @@ export const TutorDashboard = () => {
                   ) : upcoming.length === 0 ? (
                     <div className="text-center py-10 text-subtle text-sm">
                       <div className="text-3xl mb-3">🎓</div>
-                      <p>Brak nadchodzących lekcji. Dodaj terminy, żeby uczniowie mogli je rezerwować.</p>
-                      <button onClick={() => setTab('Terminy')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">Dodaj terminy →</button>
+                      <p>Brak nadchodzących lekcji. Ustaw harmonogram, żeby uczniowie mogli rezerwować terminy.</p>
+                      <button onClick={() => setTab('Harmonogram')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">Ustaw harmonogram →</button>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
                       {upcoming.map(b => {
                         const { date, time } = formatDt(b.start_time);
                         const { time: endTime } = formatDt(b.end_time);
+                        const meetUrl = b.session?.meeting_url;
                         return (
-                          <div key={b.id} className="flex items-center justify-between p-4 bg-surface-2 rounded-xl border border-line">
-                            <div className="flex items-center gap-3.5">
-                              <div className={`w-10 h-10 rounded-lg ${GRAD} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                                U{b.student_id}
+                          <div key={b.id} className="bg-surface-2 rounded-xl border border-line overflow-hidden">
+                            <div className="flex items-center justify-between p-4">
+                              <div className="flex items-center gap-3.5">
+                                <div className={`w-10 h-10 rounded-lg ${GRAD} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                                  U{b.student_id}
+                                </div>
+                                <div>
+                                  <div className="font-semibold text-sm">Uczeń #{b.student_id}</div>
+                                  <div className="text-[0.74rem] text-subtle">{date} · {time} – {endTime}</div>
+                                </div>
                               </div>
-                              <div>
-                                <div className="font-semibold text-sm">Uczeń #{b.student_id}</div>
-                                <div className="text-[0.74rem] text-subtle">{date} · {time} – {endTime}</div>
-                              </div>
+                              <span className={`px-2.5 py-1 rounded-full border text-[0.7rem] font-semibold ${statusColor(b.status)}`}>
+                                {statusLabel(b.status)}
+                              </span>
                             </div>
-                            <span className={`px-2.5 py-1 rounded-full border text-[0.7rem] font-semibold ${statusColor(b.status)}`}>
-                              {statusLabel(b.status)}
-                            </span>
+                            {meetUrl && (() => {
+                              const startsIn = new Date(b.start_time) - new Date();
+                              const minutesLeft = Math.ceil(startsIn / 60000);
+                              const isLinkActive = minutesLeft <= 10;
+                              return (
+                                <div className="px-4 pb-4">
+                                  {isLinkActive ? (
+                                    <a
+                                      href={meetUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200 no-underline`}
+                                    >
+                                      🎥 Dołącz do spotkania
+                                    </a>
+                                  ) : (
+                                    <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-3 border border-line text-subtle text-[0.78rem] font-medium">
+                                      🔒 Link dostępny za {minutesLeft - 10} min
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
                           </div>
                         );
                       })}
@@ -209,8 +482,11 @@ export const TutorDashboard = () => {
                 <div className="bg-surface border border-line rounded-2xl p-6">
                   <h3 className="font-bold text-sm mb-4">Szybkie akcje</h3>
                   <div className="flex flex-col gap-2.5">
-                    <button onClick={() => setTab('Terminy')} className={`py-2.5 rounded-xl ${GRAD} text-white text-sm font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 transition-all duration-200`}>
-                      Zarządzaj terminami →
+                    <button onClick={() => setTab('Harmonogram')} className={`py-2.5 rounded-xl ${GRAD} text-white text-sm font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 transition-all duration-200`}>
+                      Ustaw harmonogram →
+                    </button>
+                    <button onClick={() => setTab('Terminy')} className="py-2.5 rounded-xl border border-line-hi text-subtle text-sm font-medium cursor-pointer bg-transparent font-sans hover:text-white hover:border-white/20 transition-all duration-200">
+                      Zobacz wygenerowane terminy
                     </button>
                     <button onClick={() => setTab('Profil')} className="py-2.5 rounded-xl border border-line-hi text-subtle text-sm font-medium cursor-pointer bg-transparent font-sans hover:text-white hover:border-white/20 transition-all duration-200">
                       Edytuj profil
@@ -222,73 +498,73 @@ export const TutorDashboard = () => {
           </>
         )}
 
-        {/* ── TERMINY ── */}
+        {/* ── HARMONOGRAM (New Weekly Schedule Builder) ── */}
+        {tab === 'Harmonogram' && (
+          <WeeklyScheduleBuilder
+            schedule={schedule}
+            setSchedule={setSchedule}
+            onSave={handleSaveSchedule}
+            saving={schedSaving}
+            saveMsg={schedMsg}
+            saveError={schedError}
+          />
+        )}
+
+        {/* ── TERMINY (Generated Slots) ── */}
         {tab === 'Terminy' && (
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
-            {/* Existing slots */}
-            <div>
-              <h2 className="font-bold text-[1.1rem] mb-5">Twoje terminy ({slots.length})</h2>
-              {loading ? (
-                <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-surface rounded-xl animate-pulse" />)}</div>
-              ) : slots.length === 0 ? (
-                <div className="bg-surface border border-line rounded-2xl p-10 text-center text-subtle">
-                  <div className="text-3xl mb-3">📅</div>
-                  <p className="text-sm">Brak terminów. Dodaj pierwszy slot obok.</p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {slots
-                    .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
-                    .map(slot => {
-                      const { date, time } = formatDt(slot.start_time);
-                      const { time: endTime } = formatDt(slot.end_time);
-                      const isPast = new Date(slot.start_time) <= new Date();
-                      return (
-                        <div key={slot.id} className={`flex items-center justify-between p-4 bg-surface border rounded-xl ${isPast ? 'border-line opacity-50' : 'border-line hover:border-accent/30'} transition-colors`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${isPast ? 'bg-faint' : 'bg-green-400'}`} />
-                            <div>
-                              <div className="text-sm font-medium capitalize">{date}</div>
-                              <div className="text-[0.75rem] text-subtle">{time} – {endTime}</div>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleDeleteSlot(slot.id)}
-                            disabled={deletingId === slot.id}
-                            className="text-[0.75rem] text-red-400 hover:text-red-300 transition-colors cursor-pointer bg-transparent border-0 font-sans disabled:opacity-50 px-2"
-                          >
-                            {deletingId === slot.id ? '...' : 'Usuń'}
-                          </button>
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
+          <div>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="font-bold text-[1.1rem]">Wygenerowane terminy ({futureSlots.length})</h2>
+                <p className="text-[0.82rem] text-subtle mt-1">
+                  Terminy generowane automatycznie z Twojego harmonogramu tygodniowego.
+                </p>
+              </div>
+              <button
+                onClick={() => setTab('Harmonogram')}
+                className="px-4 py-2 rounded-xl border border-accent/30 text-accent text-sm font-semibold cursor-pointer bg-transparent font-sans hover:bg-accent/5 transition-all duration-200"
+              >
+                Edytuj harmonogram
+              </button>
             </div>
 
-            {/* Add slot form */}
-            <div className="bg-surface border border-line rounded-2xl p-7">
-              <h3 className="font-bold text-[1rem] mb-1">Dodaj nowy termin</h3>
-              <p className="text-[0.82rem] text-subtle mb-5">Ustaw przedział czasowy, który uczniowie będą mogli zarezerwować.</p>
-              {slotError && <div className="mb-4 p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm">{slotError}</div>}
-              <form onSubmit={handleAddSlot} className="space-y-4">
-                <div>
-                  <label className="block text-[0.82rem] font-medium text-subtle mb-2">Początek lekcji</label>
-                  <input type="datetime-local" className={INPUT} value={slotStart} onChange={e => setSlotStart(e.target.value)} required />
-                </div>
-                <div>
-                  <label className="block text-[0.82rem] font-medium text-subtle mb-2">Koniec lekcji</label>
-                  <input type="datetime-local" className={INPUT} value={slotEnd} onChange={e => setSlotEnd(e.target.value)} required />
-                </div>
-                <button
-                  type="submit"
-                  disabled={slotLoading}
-                  className={`w-full py-3 rounded-xl ${GRAD} text-white font-semibold text-sm cursor-pointer border-0 font-sans transition-all duration-200 hover:-translate-y-0.5 ${slotLoading ? 'opacity-60' : ''}`}
-                >
-                  {slotLoading ? 'Dodawanie...' : 'Dodaj termin →'}
-                </button>
-              </form>
-            </div>
+            {loading ? (
+              <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-surface rounded-xl animate-pulse" />)}</div>
+            ) : slots.length === 0 ? (
+              <div className="bg-surface border border-line rounded-2xl p-10 text-center text-subtle">
+                <div className="text-3xl mb-3">📅</div>
+                <p className="text-sm">Brak terminów. Ustaw harmonogram tygodniowy, aby automatycznie wygenerować sloty.</p>
+                <button onClick={() => setTab('Harmonogram')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">Ustaw harmonogram →</button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                {slots
+                  .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+                  .map(slot => {
+                    const { date, time } = formatDt(slot.start_time);
+                    const { time: endTime } = formatDt(slot.end_time);
+                    const isPast = new Date(slot.start_time) <= new Date();
+                    return (
+                      <div key={slot.id} className={`flex items-center justify-between p-4 bg-surface border rounded-xl ${isPast ? 'border-line opacity-50' : 'border-line hover:border-accent/30'} transition-colors`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${isPast ? 'bg-faint' : 'bg-green-400'}`} />
+                          <div>
+                            <div className="text-sm font-medium capitalize">{date}</div>
+                            <div className="text-[0.75rem] text-subtle">{time} – {endTime}</div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          disabled={deletingId === slot.id}
+                          className="text-[0.75rem] text-red-400 hover:text-red-300 transition-colors cursor-pointer bg-transparent border-0 font-sans disabled:opacity-50 px-2"
+                        >
+                          {deletingId === slot.id ? '...' : 'Usuń'}
+                        </button>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
 

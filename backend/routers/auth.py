@@ -32,8 +32,9 @@ async def register(user: UserCreate, db: Session = Depends(get_db)):
         )
 
     hashed_password = get_password_hash(user.password)
+    # Always force role to student — admin/tutor roles are assigned by admins only
     new_user = User(
-        email=user.email, password=hashed_password, name=user.name, role=user.role
+        email=user.email, password=hashed_password, name=user.name, role="student"
     )
 
     db.add(new_user)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from enum import Enum
 
@@ -18,7 +18,7 @@ class SubjectResponse(BaseModel):
 
 class TutorProfileBase(BaseModel):
     bio: Optional[str] = None
-    price_per_hour: int
+    price_per_hour: int = Field(gt=0)
 
 
 class TutorProfileCreate(TutorProfileBase):

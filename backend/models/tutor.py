@@ -28,3 +28,4 @@ class TutorProfile(Base):
     user = relationship("User", back_populates="tutor_profile")
     availability_slots = relationship("AvailabilitySlot", back_populates="tutor")
     subjects = relationship("TutorSubject", back_populates="tutor", cascade="all, delete-orphan")
+    weekly_schedules = relationship("WeeklySchedule", back_populates="tutor", cascade="all, delete-orphan")
