@@ -2,10 +2,10 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { StudentDashboard } from './StudentDashboard';
 import { TutorDashboard } from './TutorDashboard';
+import { AdminDashboard } from './AdminDashboard';
 
 /**
- * Router komponent — wyświetla StudentDashboard lub TutorDashboard
- * w zależności od roli zalogowanego użytkownika.
+ * Router komponent — dashboard wg roli (admin / korepetytor / uczeń).
  */
 export const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -18,6 +18,7 @@ export const Dashboard = () => {
     );
   }
 
+  if (user?.role === 'admin') return <AdminDashboard />;
   if (user?.role === 'tutor') return <TutorDashboard />;
   return <StudentDashboard />;
 };

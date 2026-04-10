@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routers import auth, tutors, availability, bookings, sessions, stats, schedule
+from routers import auth, tutors, availability, bookings, sessions, stats, schedule, admin
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="KorkiINF API", version="1.0.0")
@@ -20,3 +20,4 @@ app.include_router(bookings.router)
 app.include_router(sessions.router)
 app.include_router(stats.router)
 app.include_router(schedule.router)
+app.include_router(admin.router)

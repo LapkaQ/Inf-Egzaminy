@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from core.config import settings
 from db.base import get_db
-from models.user import User
+from models.user import User, UserRole
 from schemas.user import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -67,3 +67,12 @@ def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
+
+def get_current_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Wymagane uprawnienia administratora",
+        )
+    return current_user
