@@ -19,6 +19,7 @@ class Session(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"), nullable=False)
 
     meeting_url = Column(String(255), nullable=False)
+    zoom_meeting_id = Column(String(64), nullable=True)
 
     status = Column(Enum(SessionStatus), default=SessionStatus.scheduled)
 

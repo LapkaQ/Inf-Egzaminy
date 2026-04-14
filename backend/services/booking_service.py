@@ -2,12 +2,23 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from fastapi import HTTPException, status
 import uuid
+import logging
 from models.booking import Booking, BookingStatus
 from models.availability import AvailabilitySlot
 from models.user import User, UserRole
 from models.tutor import TutorProfile
 from models.session import Session as MeetingSession, SessionStatus
 from schemas.booking import BookingCreate
+from services.meeting_service import create_zoom_meeting, delete_zoom_meeting
+from core.config import settings
+
+logger = logging.getLogger(__name__)
+
+
+def _zoom_is_configured() -> bool:
+    """Sprawdza czy dane Zoom API zostały podane w .env"""
+    return bool(settings.ZOOM_ACCOUNT_ID and settings.ZOOM_CLIENT_ID and settings.ZOOM_CLIENT_SECRET)
+
 
 def create_booking(db: Session, current_user: User, booking_data: BookingCreate) -> Booking:
     # Lock the availability slot for this transaction!
@@ -46,12 +57,37 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
     db.add(new_booking)
     db.flush() # pobieramy new_booking.id zanim zrobimy pełen commit
 
-    fake_meeting_hash = str(uuid.uuid4())[:8]
-    meeting_url = f"https://korki-app.com/meet/{new_booking.id}-{fake_meeting_hash}"
+    # ── Generowanie linku spotkania ──
+    meeting_url = ""
+    zoom_meeting_id = None
+
+    if _zoom_is_configured():
+        try:
+            duration = int((slot.end_time - slot.start_time).total_seconds() / 60)
+            topic = f"Korepetycje – lekcja #{new_booking.id}"
+
+            zoom_data = create_zoom_meeting(
+                topic=topic,
+                start_time=slot.start_time,
+                duration_minutes=duration,
+            )
+            meeting_url = zoom_data["join_url"]
+            zoom_meeting_id = zoom_data["meeting_id"]
+            logger.info("Zoom meeting created for booking %s: %s", new_booking.id, meeting_url)
+        except Exception as e:
+            logger.error("Zoom meeting creation failed for booking %s: %s", new_booking.id, e)
+            # Fallback do linku zastępczego gdy Zoom API nie odpowiada
+            fake_hash = str(uuid.uuid4())[:8]
+            meeting_url = f"https://korki-app.com/meet/{new_booking.id}-{fake_hash}"
+    else:
+        # Brak konfiguracji Zoom – generujemy placeholder
+        fake_hash = str(uuid.uuid4())[:8]
+        meeting_url = f"https://korki-app.com/meet/{new_booking.id}-{fake_hash}"
 
     new_session = MeetingSession(
         booking_id=new_booking.id,
         meeting_url=meeting_url,
+        zoom_meeting_id=zoom_meeting_id,
         status=SessionStatus.scheduled
     )
     db.add(new_session)
@@ -90,6 +126,9 @@ def cancel_booking(db: Session, current_user: User, booking_id: int):
     
     # Skoro odwołane, nikt tam nie wejdzie. Zwalniamy model sesji by link nie był aktywny na darmo.
     if booking.session:
+        # Jeśli to był prawdziwy Zoom meeting, usuwamy go
+        if booking.session.zoom_meeting_id:
+            delete_zoom_meeting(booking.session.zoom_meeting_id)
         db.delete(booking.session)
         
     db.commit()

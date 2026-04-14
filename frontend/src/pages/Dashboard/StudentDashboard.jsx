@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyBookings, cancelBooking } from '../../services/tutors';
+import { generateMeeting } from '../../services/meetings';
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2';
 
@@ -21,6 +22,7 @@ export const StudentDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [cancelling, setCancelling] = useState(null);
+  const [regenerating, setRegenerating] = useState(null);
 
   useEffect(() => {
     getMyBookings()
@@ -36,6 +38,17 @@ export const StudentDashboard = () => {
       setBookings(prev => prev.map(b => b.id === id ? updated : b));
     } catch {}
     finally { setCancelling(null); }
+  };
+
+  const handleRegenerate = async (id) => {
+    setRegenerating(id);
+    try {
+      const result = await generateMeeting(id);
+      // Odśwież bookings po wygenerowaniu nowego linku
+      const refreshed = await getMyBookings();
+      setBookings(refreshed);
+    } catch {}
+    finally { setRegenerating(null); }
   };
 
   const upcoming  = bookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed' && new Date(b.start_time) > new Date());
@@ -116,8 +129,9 @@ export const StudentDashboard = () => {
                       const startsIn = new Date(b.start_time) - new Date();
                       const minutesLeft = Math.ceil(startsIn / 60000);
                       const isLinkActive = minutesLeft <= 10;
+                      const isZoomLink = meetUrl.includes('zoom.us');
                       return (
-                        <div className="px-4 pb-4">
+                        <div className="px-4 pb-4 flex flex-col gap-2">
                           {isLinkActive ? (
                             <a
                               href={meetUrl}
@@ -125,12 +139,21 @@ export const StudentDashboard = () => {
                               rel="noopener noreferrer"
                               className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200 no-underline`}
                             >
-                              🎥 Dołącz do spotkania
+                              {isZoomLink ? '🎥 Dołącz do spotkania Zoom' : '🎥 Dołącz do spotkania'}
                             </a>
                           ) : (
                             <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-2 border border-line text-subtle text-[0.78rem] font-medium">
                               🔒 Link dostępny za {minutesLeft - 10} min
                             </div>
+                          )}
+                          {!isZoomLink && (
+                            <button
+                              onClick={() => handleRegenerate(b.id)}
+                              disabled={regenerating === b.id}
+                              className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 text-[0.75rem] font-semibold hover:bg-blue-600/30 transition-all duration-200 cursor-pointer disabled:opacity-50`}
+                            >
+                              {regenerating === b.id ? '⏳ Generuję...' : '🔄 Wygeneruj link Zoom'}
+                            </button>
                           )}
                         </div>
                       );
