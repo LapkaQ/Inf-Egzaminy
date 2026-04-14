@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { authService } from '../../services/auth'
 
 const INPUT =
   'w-full bg-surface-2 border border-line rounded-xl px-4 py-3 text-sm text-white placeholder:text-faint outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12)] font-sans'
@@ -10,22 +11,44 @@ export const Login = () => {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [unverified, setUnverified] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resendMsg, setResendMsg] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    setUnverified(false)
+    setResendMsg('')
     setLoading(true)
     try {
       await login(email, password)
       navigate('/dashboard')
     } catch (err) {
-      setError(
-        err.message || 'Błąd logowania. Sprawdź dane i spróbuj ponownie.',
-      )
+      const msg = err.message || 'Błąd logowania. Sprawdź dane i spróbuj ponownie.'
+      if (msg.toLowerCase().includes('not verified') || msg.toLowerCase().includes('email')) {
+        setUnverified(true)
+        setError('Twój email nie został jeszcze potwierdzony. Sprawdź skrzynkę pocztową lub wyślij link ponownie.')
+      } else {
+        setError(msg)
+      }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleResendVerification = async () => {
+    setResending(true)
+    setResendMsg('')
+    try {
+      await authService.resendVerification(email)
+      setResendMsg('Email weryfikacyjny został wysłany ponownie!')
+    } catch {
+      setResendMsg('Nie udało się wysłać. Spróbuj później.')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -55,6 +78,21 @@ export const Login = () => {
         {error && (
           <div className="bg-red-500/8 border border-red-500/25 rounded-xl px-4 py-3 text-sm text-red-400 mb-5">
             {error}
+            {unverified && (
+              <div className="mt-3 pt-3 border-t border-red-500/15">
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resending || !email}
+                  className="text-accent text-xs font-semibold hover:text-violet-300 transition-colors cursor-pointer bg-transparent border-0 font-sans p-0"
+                >
+                  {resending ? 'Wysyłanie...' : '🔄 Wyślij email weryfikacyjny ponownie'}
+                </button>
+                {resendMsg && (
+                  <p className="mt-2 text-xs text-green-400">{resendMsg}</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -78,12 +116,12 @@ export const Login = () => {
               <label className="text-[0.82rem] font-medium text-subtle">
                 Hasło
               </label>
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="text-[0.78rem] text-accent font-medium hover:text-violet-300 transition-colors"
               >
                 Zapomniałeś hasła?
-              </a>
+              </Link>
             </div>
             <input
               type="password"

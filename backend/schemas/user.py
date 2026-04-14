@@ -17,6 +17,7 @@ class UserCreate(UserBase):
 class UserResponse(UserBase):
     id: int
     role: UserRole
+    is_verified: bool
     created_at: datetime
 
     class Config:
@@ -30,3 +31,22 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: Optional[int] = None
+
+
+# ─── Email verification & password reset ─────────────────────────────────────
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, description="Nowe hasło musi mieć minimum 8 znaków")
+
+
+class ResendVerificationRequest(BaseModel):
+    email: EmailStr
+
+
+class MessageResponse(BaseModel):
+    message: str

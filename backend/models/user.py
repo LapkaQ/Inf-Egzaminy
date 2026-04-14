@@ -20,6 +20,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     name = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.student)
+    is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     tutor_profile = relationship("TutorProfile", back_populates="user", uselist=False)

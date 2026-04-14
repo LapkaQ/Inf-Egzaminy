@@ -14,26 +14,106 @@ export const Register = () => {
   const [role, setRole] = useState('student')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const [registered, setRegistered] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resendMsg, setResendMsg] = useState('')
   const navigate = useNavigate()
 
   const handleRegister = async (e) => {
     e.preventDefault()
     setError('')
-    if (password.length < 6) {
-      setError('Hasło musi mieć co najmniej 6 znaków.')
+    if (password.length < 8) {
+      setError('Hasło musi mieć co najmniej 8 znaków.')
       return
     }
     setLoading(true)
     try {
       await authService.register(email, password, name, role)
-      await login(email, password)
-      navigate('/dashboard')
+      setRegistered(true)
     } catch (err) {
       setError(err.message || 'Błąd rejestracji. Spróbuj ponownie.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleResend = async () => {
+    setResending(true)
+    setResendMsg('')
+    try {
+      await authService.resendVerification(email)
+      setResendMsg('Email weryfikacyjny został wysłany ponownie!')
+    } catch {
+      setResendMsg('Nie udało się wysłać ponownie. Spróbuj później.')
+    } finally {
+      setResending(false)
+    }
+  }
+
+  if (registered) {
+    return (
+      <div className="min-h-screen bg-page flex items-center justify-center px-5 py-28 relative">
+        <div className="fixed inset-0 bg-[radial-gradient(ellipse_60%_50%_at_20%_40%,rgba(124,58,237,0.08)_0%,transparent_60%),radial-gradient(ellipse_50%_40%_at_80%_60%,rgba(59,130,246,0.06)_0%,transparent_60%)] pointer-events-none" />
+
+        <div className="relative z-10 w-full max-w-[460px] bg-surface border border-line rounded-2xl p-11 text-center animate-scale-in">
+          {/* Logo */}
+          <div className="flex items-center justify-center gap-2.5 mb-10">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
+              K
+            </div>
+            <span className="font-extrabold text-white tracking-tight">
+              KorINF
+            </span>
+          </div>
+
+          <div className="w-20 h-20 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center mx-auto text-4xl mb-6 animate-scale-in [animation-delay:0.1s]">
+            📧
+          </div>
+
+          <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white">
+            Potwierdź swój email
+          </h1>
+          <p className="text-sm text-subtle mb-6 leading-relaxed">
+            Wysłaliśmy link weryfikacyjny na adres{' '}
+            <strong className="text-white">{email}</strong>. Kliknij link w
+            wiadomości, aby aktywować konto.
+          </p>
+
+          <div className="bg-surface-2 border border-line rounded-xl p-5 mb-6 text-left">
+            <p className="text-sm font-semibold text-white mb-2">
+              Nie widzisz maila?
+            </p>
+            <ul className="text-[0.78rem] text-subtle space-y-1.5 list-none p-0 m-0">
+              <li>📥 Sprawdź folder spam / oferty</li>
+              <li>⏱️ Poczekaj 1–2 minuty</li>
+              <li>
+                🔄{' '}
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending}
+                  className="text-accent font-semibold hover:text-violet-300 transition-colors cursor-pointer bg-transparent border-0 font-sans p-0 text-[0.78rem]"
+                >
+                  {resending
+                    ? 'Wysyłanie...'
+                    : 'Wyślij ponownie'}
+                </button>
+              </li>
+            </ul>
+            {resendMsg && (
+              <p className="mt-3 text-xs text-green-400">{resendMsg}</p>
+            )}
+          </div>
+
+          <Link
+            to="/login"
+            className="block w-full py-3.5 rounded-xl bg-gradient-to-br from-accent to-accent-2 text-white font-semibold text-sm text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(124,58,237,0.45)] no-underline"
+          >
+            Przejdź do logowania →
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -100,7 +180,7 @@ export const Register = () => {
             <input
               type="password"
               className={INPUT}
-              placeholder="Min. 6 znaków"
+              placeholder="Min. 8 znaków"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

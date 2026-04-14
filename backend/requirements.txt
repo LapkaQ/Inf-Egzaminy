@@ -5,6 +5,8 @@ pymysql
 pydantic_settings
 pydantic
 passlib[bcrypt]
+bcrypt
 PyJWT
 python-multipart
 email-validator
+jinja2

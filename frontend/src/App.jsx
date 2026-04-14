@@ -12,6 +12,9 @@ import Register from './pages/Register';
 import Tutors from './pages/Tutors';
 import TutorDetails from './pages/TutorDetails';
 import Dashboard from './pages/Dashboard';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   return (
@@ -23,6 +26,11 @@ function App() {
             <Route index element={<Home />} />
             <Route path="tutors" element={<Tutors />} />
             <Route path="tutors/:id" element={<TutorDetails />} />
+
+            {/* Weryfikacja email i reset hasła — dostępne publicznie */}
+            <Route path="verify-email" element={<VerifyEmail />} />
+            <Route path="forgot-password" element={<ForgotPassword />} />
+            <Route path="reset-password" element={<ResetPassword />} />
 
             {/* Tylko dla niezalogowanych */}
             <Route element={<PublicRoute />}>
@@ -42,5 +50,3 @@ function App() {
 }
 
 export default App;
-
-

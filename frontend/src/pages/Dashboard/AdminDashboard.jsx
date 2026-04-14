@@ -11,6 +11,9 @@ import {
   patchAdminTutorProfile,
   promoteTutor,
   demoteTutor,
+  sendEmailToUser,
+  sendEmailToSelected,
+  sendEmailToAll,
 } from '../../services/admin';
 import { cancelBooking, getTutorById } from '../../services/tutors';
 
@@ -54,12 +57,22 @@ export const AdminDashboard = () => {
   const [userRoleFilter, setUserRoleFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [busy, setBusy] = useState(null);
 
   const [editBooking, setEditBooking] = useState(null);
   const [editSession, setEditSession] = useState(null);
   const [editUser, setEditUser] = useState(null);
   const [editTutor, setEditTutor] = useState(null);
+
+  // ─── Email state ─────────────────────────────────────────────────────────
+  const [emailMode, setEmailMode] = useState('single'); // single | selected | all
+  const [emailUserId, setEmailUserId] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [emailRoleFilter, setEmailRoleFilter] = useState('');
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [emailUserSearch, setEmailUserSearch] = useState('');
 
   const loadOverview = useCallback(() => {
     getAdminOverview().then(setOverview).catch(() => {});
@@ -90,8 +103,16 @@ export const AdminDashboard = () => {
   }, [tab, bookingFilter, loadBookings]);
 
   useEffect(() => {
-    if (tab === 'users') loadUsers();
+    if (tab === 'users' || tab === 'email') loadUsers();
   }, [tab, userRoleFilter, loadUsers]);
+
+  // Auto-clear success message
+  useEffect(() => {
+    if (successMsg) {
+      const t = setTimeout(() => setSuccessMsg(''), 5000);
+      return () => clearTimeout(t);
+    }
+  }, [successMsg]);
 
   const copyLink = (url) => {
     navigator.clipboard.writeText(url).catch(() => {});
@@ -226,7 +247,71 @@ export const AdminDashboard = () => {
     }
   };
 
-  const tabBtn = (id, label) => (
+  // ─── Email sending ─────────────────────────────────────────────────────────
+  const handleSendEmail = async (e) => {
+    e.preventDefault();
+    if (!emailSubject.trim() || !emailMessage.trim()) {
+      setErr('Podaj temat i treść wiadomości.');
+      return;
+    }
+    setBusy('send-email');
+    setErr('');
+    try {
+      let result;
+      if (emailMode === 'single') {
+        const uid = parseInt(emailUserId);
+        if (!uid) {
+          setErr('Podaj prawidłowe ID użytkownika.');
+          setBusy(null);
+          return;
+        }
+        result = await sendEmailToUser(uid, emailSubject, emailMessage);
+      } else if (emailMode === 'selected') {
+        if (selectedUserIds.length === 0) {
+          setErr('Wybierz przynajmniej jednego użytkownika.');
+          setBusy(null);
+          return;
+        }
+        result = await sendEmailToSelected(selectedUserIds, emailSubject, emailMessage);
+      } else {
+        result = await sendEmailToAll(emailSubject, emailMessage, emailRoleFilter || undefined);
+      }
+      setSuccessMsg(`✅ ${result.message}`);
+      setEmailSubject('');
+      setEmailMessage('');
+      setEmailUserId('');
+      setSelectedUserIds([]);
+    } catch (e) {
+      setErr(e.message || 'Wysyłanie emaila nie powiodło się.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const toggleUserSelection = (id) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(id) ? prev.filter((uid) => uid !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllFiltered = () => {
+    const filtered = getFilteredUsersForEmail();
+    const allIds = filtered.map((u) => u.id);
+    setSelectedUserIds(allIds);
+  };
+
+  const deselectAll = () => setSelectedUserIds([]);
+
+  const getFilteredUsersForEmail = () => {
+    return users.filter((u) => {
+      const matchSearch = !emailUserSearch ||
+        u.name.toLowerCase().includes(emailUserSearch.toLowerCase()) ||
+        u.email.toLowerCase().includes(emailUserSearch.toLowerCase());
+      return matchSearch;
+    });
+  };
+
+  const tabBtn = (id, label, icon = '') => (
     <button
       type="button"
       key={id}
@@ -237,6 +322,7 @@ export const AdminDashboard = () => {
           : 'bg-surface border-line text-subtle hover:text-white'
       }`}
     >
+      {icon && <span className="mr-1.5">{icon}</span>}
       {label}
     </button>
   );
@@ -263,10 +349,20 @@ export const AdminDashboard = () => {
           </div>
         )}
 
+        {successMsg && (
+          <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/25 text-green-300 text-sm animate-fade-up">
+            {successMsg}
+            <button type="button" className="ml-3 underline cursor-pointer bg-transparent border-0 text-green-200 font-sans" onClick={() => setSuccessMsg('')}>
+              Zamknij
+            </button>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-2 mb-8">
           {tabBtn('overview', 'Przegląd')}
           {tabBtn('bookings', 'Rezerwacje i linki')}
           {tabBtn('users', 'Użytkownicy')}
+          {tabBtn('email', 'Maile', '📧')}
         </div>
 
         {loading ? (
@@ -439,6 +535,7 @@ export const AdminDashboard = () => {
                         <th className="p-3 font-semibold">Imię i nazwisko</th>
                         <th className="p-3 font-semibold">E-mail</th>
                         <th className="p-3 font-semibold">Rola</th>
+                        <th className="p-3 font-semibold">Status</th>
                         <th className="p-3 font-semibold text-right">Akcje</th>
                       </tr>
                     </thead>
@@ -450,6 +547,13 @@ export const AdminDashboard = () => {
                           <td className="p-3 text-xs text-subtle break-all">{u.email}</td>
                           <td className="p-3">
                             <span className="text-xs px-2 py-1 rounded-lg bg-surface-2 border border-line capitalize">{u.role}</span>
+                          </td>
+                          <td className="p-3">
+                            {u.is_verified ? (
+                              <span className="text-xs px-2 py-1 rounded-full bg-green-500/10 border border-green-500/25 text-green-400">Zweryfikowany</span>
+                            ) : (
+                              <span className="text-xs px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400">Niezweryfikowany</span>
+                            )}
                           </td>
                           <td className="p-3 text-right whitespace-nowrap">
                             <button
@@ -517,6 +621,218 @@ export const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Email tab ───────────────────────────────────────────────────── */}
+            {tab === 'email' && (
+              <div className="animate-fade-up space-y-6">
+                {/* Mode selector */}
+                <div className="bg-surface border border-line rounded-2xl p-6">
+                  <h2 className="font-bold text-lg mb-1">Wyślij wiadomość email</h2>
+                  <p className="text-subtle text-xs mb-5">Wybierz odbiorców i napisz wiadomość. Emaile są wysyłane w tle.</p>
+
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {[
+                      ['single', '👤 Pojedynczy użytkownik'],
+                      ['selected', '☑️ Zaznaczeni użytkownicy'],
+                      ['all', '📢 Wszyscy użytkownicy'],
+                    ].map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        onClick={() => setEmailMode(mode)}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer font-sans border ${
+                          emailMode === mode
+                            ? `${GRAD} text-white border-transparent`
+                            : 'bg-surface-2 border-line text-subtle hover:text-white'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <form onSubmit={handleSendEmail} className="space-y-4">
+                    {/* Single user - ID input */}
+                    {emailMode === 'single' && (
+                      <div>
+                        <label className="text-xs text-subtle block mb-1.5">ID użytkownika</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            className={`${INPUT} max-w-[140px]`}
+                            placeholder="np. 5"
+                            value={emailUserId}
+                            onChange={(e) => setEmailUserId(e.target.value)}
+                            min={1}
+                          />
+                          {emailUserId && users.find((u) => u.id === parseInt(emailUserId)) && (
+                            <div className="flex items-center gap-2 px-3 py-1 bg-surface-2 border border-line rounded-xl text-xs">
+                              <span className="font-medium text-white">
+                                {users.find((u) => u.id === parseInt(emailUserId))?.name}
+                              </span>
+                              <span className="text-subtle">
+                                {users.find((u) => u.id === parseInt(emailUserId))?.email}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Selected users - checkbox list */}
+                    {emailMode === 'selected' && (
+                      <div>
+                        <label className="text-xs text-subtle block mb-1.5">
+                          Wybrani użytkownicy ({selectedUserIds.length})
+                        </label>
+                        <div className="flex gap-2 mb-3">
+                          <input
+                            type="text"
+                            className={`${INPUT} max-w-xs`}
+                            placeholder="Szukaj po imieniu lub emailu..."
+                            value={emailUserSearch}
+                            onChange={(e) => setEmailUserSearch(e.target.value)}
+                          />
+                          <button type="button" className={BTN_SECONDARY} onClick={selectAllFiltered}>
+                            Zaznacz wszystkie
+                          </button>
+                          <button type="button" className={BTN_SECONDARY} onClick={deselectAll}>
+                            Odznacz
+                          </button>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto bg-surface-2 border border-line rounded-xl divide-y divide-line">
+                          {getFilteredUsersForEmail().map((u) => (
+                            <label
+                              key={u.id}
+                              className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
+                                selectedUserIds.includes(u.id) ? 'bg-accent/5' : 'hover:bg-white/[0.02]'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedUserIds.includes(u.id)}
+                                onChange={() => toggleUserSelection(u.id)}
+                                className="w-4 h-4 accent-violet-500 cursor-pointer"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium truncate">{u.name}</div>
+                                <div className="text-xs text-subtle truncate">{u.email}</div>
+                              </div>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-surface border border-line capitalize shrink-0">
+                                {u.role}
+                              </span>
+                            </label>
+                          ))}
+                          {getFilteredUsersForEmail().length === 0 && (
+                            <div className="p-4 text-center text-subtle text-xs">Brak wyników.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* All users - optional role filter */}
+                    {emailMode === 'all' && (
+                      <div>
+                        <label className="text-xs text-subtle block mb-1.5">Filtruj według roli (opcjonalnie)</label>
+                        <select
+                          value={emailRoleFilter}
+                          onChange={(e) => setEmailRoleFilter(e.target.value)}
+                          className={`${INPUT} w-auto max-w-xs py-2`}
+                        >
+                          <option value="">Wszyscy użytkownicy</option>
+                          <option value="student">Tylko uczniowie</option>
+                          <option value="tutor">Tylko korepetytorzy</option>
+                          <option value="admin">Tylko administratorzy</option>
+                        </select>
+                        <p className="text-xs text-subtle mt-2">
+                          Email zostanie wysłany do <strong className="text-white">
+                            {emailRoleFilter
+                              ? users.filter((u) => u.role === emailRoleFilter).length
+                              : users.length}
+                          </strong> użytkowników.
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Subject & Message - common */}
+                    <div>
+                      <label className="text-xs text-subtle block mb-1.5">Temat wiadomości</label>
+                      <input
+                        className={INPUT}
+                        placeholder="np. Ważna informacja od zespołu KorINF"
+                        value={emailSubject}
+                        onChange={(e) => setEmailSubject(e.target.value)}
+                        required
+                        maxLength={200}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-subtle block mb-1.5">Treść wiadomości</label>
+                      <textarea
+                        className={`${INPUT} min-h-[140px] resize-y`}
+                        placeholder="Wpisz treść wiadomości email..."
+                        value={emailMessage}
+                        onChange={(e) => setEmailMessage(e.target.value)}
+                        required
+                        maxLength={5000}
+                      />
+                      <p className="text-xs text-faint mt-1 text-right">{emailMessage.length} / 5000</p>
+                    </div>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <button
+                        type="submit"
+                        disabled={busy === 'send-email'}
+                        className={`px-6 py-3 rounded-xl text-sm font-semibold text-white ${GRAD} hover:-translate-y-0.5 hover:shadow-[0_10px_35px_rgba(124,58,237,0.45)] transition-all duration-200 cursor-pointer border-0 font-sans disabled:opacity-50 disabled:pointer-events-none`}
+                      >
+                        {busy === 'send-email' ? (
+                          <span className="flex items-center gap-2">
+                            <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                            Wysyłanie...
+                          </span>
+                        ) : (
+                          `📧 Wyślij ${
+                            emailMode === 'single'
+                              ? 'do użytkownika'
+                              : emailMode === 'selected'
+                              ? `do ${selectedUserIds.length} użytkowników`
+                              : 'do wszystkich'
+                          }`
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Quick send from users list */}
+                <div className="bg-surface border border-line rounded-2xl p-6">
+                  <h3 className="font-bold text-sm mb-1">Szybka wysyłka</h3>
+                  <p className="text-subtle text-xs mb-4">Kliknij na użytkownika, aby szybko wypełnić jego ID.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {users.slice(0, 20).map((u) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => {
+                          setEmailMode('single');
+                          setEmailUserId(String(u.id));
+                        }}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer font-sans border ${
+                          emailUserId === String(u.id) && emailMode === 'single'
+                            ? `${GRAD} text-white border-transparent`
+                            : 'bg-surface-2 border-line text-subtle hover:text-white hover:border-white/20'
+                        }`}
+                      >
+                        #{u.id} {u.name}
+                      </button>
+                    ))}
+                    {users.length > 20 && (
+                      <span className="px-3 py-1.5 text-xs text-faint">+{users.length - 20} więcej...</span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

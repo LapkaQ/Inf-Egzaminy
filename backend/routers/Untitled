@@ -1,0 +1,30 @@
+from fastapi import APIRouter, status, BackgroundTasks
+from fastapi import BackgroundTasks
+from services.mail import mail_dispatcher, mail_sender
+from services.mail.mail_types import NotificationType
+
+router = APIRouter(
+    prefix="/mail",
+    tags=["Mail"]
+)
+
+@router.post("/send-email/{email}", status_code=status.HTTP_201_CREATED, description="Send Mail")
+async def send_email(email: str, background_tasks: BackgroundTasks):
+    subject = "Test Subject"
+    body = "Test Body Message"
+    background_tasks.add_task(mail_sender.create_email, email, subject, body)
+    return {"message": "Email sent in the background"}
+
+@router.post("/send_registration_email/")
+async def send_registration_email(background_tasks: BackgroundTasks, email: str):
+    parameters = {
+        "confirmation_link": "https://example.com/confirm?token=abc123"
+    }
+    mail_dispatcher.dispatch(
+        recipient_email=email,
+        notification_type=NotificationType.REGISTRATION_EMAIL,
+        subject="Confirm your registration",
+        parameters=parameters,
+        background_tasks=background_tasks
+    )
+    return {"message": "Email sent"}

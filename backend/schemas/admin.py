@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from models.booking import BookingStatus
 from models.session import SessionStatus
@@ -43,6 +43,7 @@ class AdminUserItem(BaseModel):
     email: str
     name: str
     role: str
+    is_verified: bool
     created_at: datetime
     tutor_profile_id: Optional[int] = None
 
@@ -70,3 +71,31 @@ class AdminSessionMutationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ─── Admin email schemas ──────────────────────────────────────────────────────
+
+class AdminSendEmailToUser(BaseModel):
+    """Send email to a single user by ID."""
+    user_id: int
+    subject: str = Field(min_length=1, max_length=200)
+    message: str = Field(min_length=1, max_length=5000)
+
+
+class AdminSendEmailToSelected(BaseModel):
+    """Send email to selected users by their IDs."""
+    user_ids: List[int] = Field(min_length=1)
+    subject: str = Field(min_length=1, max_length=200)
+    message: str = Field(min_length=1, max_length=5000)
+
+
+class AdminSendEmailToAll(BaseModel):
+    """Send email to all users (optionally filtered by role)."""
+    subject: str = Field(min_length=1, max_length=200)
+    message: str = Field(min_length=1, max_length=5000)
+    role_filter: Optional[str] = None  # "student", "tutor", or None for all
+
+
+class AdminEmailResponse(BaseModel):
+    message: str
+    recipients_count: int

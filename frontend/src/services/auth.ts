@@ -26,6 +26,29 @@ export const authService = {
     return data;
   },
 
+  verifyEmail: async (token: string) => {
+    const data = await api.post(`/auth/verify-email?token=${encodeURIComponent(token)}`, {});
+    return data;
+  },
+
+  resendVerification: async (email: string) => {
+    const data = await api.post('/auth/resend-verification', { email });
+    return data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const data = await api.post('/auth/forgot-password', { email });
+    return data;
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const data = await api.post('/auth/reset-password', { 
+      token, 
+      new_password: newPassword 
+    });
+    return data;
+  },
+
   logout: () => {
     localStorage.removeItem('token');
   },

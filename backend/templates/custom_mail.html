@@ -1,0 +1,11 @@
+{% extends "base_template.html" %}
+{% block content %}
+{% if name %}
+<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+  Cześć, {{ name }}! 📬
+</h1>
+{% endif %}
+<div style="font-size:14px;color:#c8c8d8;line-height:1.8;">
+  {{ message | replace('\n', '<br>') }}
+</div>
+{% endblock %}

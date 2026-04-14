@@ -259,6 +259,7 @@ def list_users(db: Session, role: Optional[UserRole] = None) -> List[AdminUserIt
                 email=u.email,
                 name=u.name,
                 role=u.role.value if hasattr(u.role, "value") else str(u.role),
+                is_verified=u.is_verified,
                 created_at=u.created_at,
                 tutor_profile_id=tid,
             )
@@ -302,6 +303,7 @@ def update_user(db: Session, user_id: int, data: AdminUserUpdate) -> AdminUserIt
         email=user.email,
         name=user.name,
         role=user.role.value if hasattr(user.role, "value") else str(user.role),
+        is_verified=user.is_verified,
         created_at=user.created_at,
         tutor_profile_id=tid,
     )

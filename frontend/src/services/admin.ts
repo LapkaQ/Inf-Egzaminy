@@ -29,3 +29,14 @@ export const promoteTutor = (userId: number) =>
 
 export const demoteTutor = (userId: number) =>
   api.post(`/tutors/remove?user_id=${userId}`, {});
+
+// ─── Admin email functions ─────────────────────────────────────────────────
+
+export const sendEmailToUser = (userId: number, subject: string, message: string) =>
+  api.post('/admin/email/user', { user_id: userId, subject, message });
+
+export const sendEmailToSelected = (userIds: number[], subject: string, message: string) =>
+  api.post('/admin/email/selected', { user_ids: userIds, subject, message });
+
+export const sendEmailToAll = (subject: string, message: string, roleFilter?: string) =>
+  api.post('/admin/email/all', { subject, message, role_filter: roleFilter || null });

@@ -1,0 +1,27 @@
+{% extends "base_template.html" %}
+{% block content %}
+<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+  Witaj, {{ name }}! 👋
+</h1>
+<p style="margin:0 0 28px;font-size:14px;color:#7a7a96;line-height:1.7;">
+  Dziękujemy za rejestrację w <strong style="color:#ffffff;">{{ app_name }}</strong>. Aby aktywować swoje konto, kliknij poniższy przycisk.
+</p>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto 28px;">
+  <tr>
+    <td align="center" style="border-radius:12px;background:linear-gradient(135deg,#7c3aed 0%,#3b82f6 100%);">
+      <a href="{{ confirmation_link }}" target="_blank" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:12px;">
+        Potwierdź adres email →
+      </a>
+    </td>
+  </tr>
+</table>
+<p style="margin:0 0 20px;font-size:13px;color:#7a7a96;line-height:1.7;">
+  Jeśli przycisk nie działa, skopiuj i wklej ten link do przeglądarki:
+</p>
+<p style="margin:0 0 8px;padding:14px 20px;background-color:#141419;border:1px solid #1f1f2a;border-radius:10px;font-size:12px;color:#7c3aed;word-break:break-all;line-height:1.6;">
+  {{ confirmation_link }}
+</p>
+<p style="margin:24px 0 0;font-size:12px;color:#444455;">
+  Link wygasa po 24 godzinach. Jeśli nie rejestrowałeś się w {{ app_name }}, zignoruj tę wiadomość.
+</p>
+{% endblock %}

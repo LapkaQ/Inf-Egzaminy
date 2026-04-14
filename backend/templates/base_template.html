@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ app_name }}</title>
+</head>
+<body style="margin:0;padding:0;background-color:#060608;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#ffffff;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#060608;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="560" cellspacing="0" cellpadding="0" border="0" style="background-color:#0e0e12;border:1px solid #1f1f2a;border-radius:16px;overflow:hidden;">
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 40px 24px;background:linear-gradient(135deg,#7c3aed 0%,#3b82f6 100%);">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="width:36px;height:36px;background-color:rgba(255,255,255,0.2);border-radius:10px;text-align:center;vertical-align:middle;font-size:16px;font-weight:900;color:#fff;">
+                    K
+                  </td>
+                  <td style="padding-left:12px;font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+                    {{ app_name }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- Content -->
+          <tr>
+            <td style="padding:36px 40px 32px;">
+              {% block content %}{% endblock %}
+            </td>
+          </tr>
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 40px;border-top:1px solid #1f1f2a;text-align:center;">
+              <p style="margin:0;font-size:12px;color:#444455;line-height:1.8;">
+                Ten email został wysłany automatycznie z platformy {{ app_name }}.<br>
+                Jeśli nie zakładałeś konta, zignoruj tę wiadomość.
+              </p>
+              <p style="margin:12px 0 0;font-size:11px;color:#333344;">
+                © {{ app_name }} {{ year if year else "2026" }} — Wszystkie prawa zastrzeżone.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
