@@ -276,7 +276,7 @@ export const AdminDashboard = () => {
       } else {
         result = await sendEmailToAll(emailSubject, emailMessage, emailRoleFilter || undefined);
       }
-      setSuccessMsg(`✅ ${result.message}`);
+      setSuccessMsg(result.message);
       setEmailSubject('');
       setEmailMessage('');
       setEmailUserId('');
@@ -322,7 +322,6 @@ export const AdminDashboard = () => {
           : 'bg-surface border-line text-subtle hover:text-white'
       }`}
     >
-      {icon && <span className="mr-1.5">{icon}</span>}
       {label}
     </button>
   );
@@ -362,7 +361,7 @@ export const AdminDashboard = () => {
           {tabBtn('overview', 'Przegląd')}
           {tabBtn('bookings', 'Rezerwacje i linki')}
           {tabBtn('users', 'Użytkownicy')}
-          {tabBtn('email', 'Maile', '📧')}
+          {tabBtn('email', 'Maile')}
         </div>
 
         {loading ? (
@@ -372,22 +371,8 @@ export const AdminDashboard = () => {
         ) : (
           <>
             {tab === 'overview' && overview && (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-up">
-                {[
-                  ['Uczniowie', overview.active_students, 'Zarejestrowane konta ucznia'],
-                  ['Korepetytorzy', overview.tutors_count, 'Aktywni w systemie'],
-                  ['Zdawalność sesji', `${overview.pass_rate_percent}%`, 'Ukończone / wszystkie'],
-                  ['Średnia ocen', overview.avg_tutor_rating, 'Profil korepetytora'],
-                  ['Rezerwacje (aktywne)', overview.bookings_active, `Łącznie: ${overview.bookings_total}`],
-                  ['Sesje zaplanowane', overview.sessions_scheduled, 'Spotkania w toku'],
-                ].map(([title, val, sub]) => (
-                  <div key={title} className="bg-surface border border-line rounded-2xl p-5">
-                    <div className="text-subtle text-xs font-medium uppercase tracking-wide">{title}</div>
-                    <div className="text-2xl font-black mt-1 tabular-nums">{val}</div>
-                    <div className="text-subtle text-xs mt-2">{sub}</div>
-                  </div>
-                ))}
-                <div className="sm:col-span-2 lg:col-span-3 bg-surface-2 border border-line rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+              <div className="animate-fade-up">
+                <div className="bg-surface-2 border border-line rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <div className="font-semibold text-sm">Skróty</div>
                     <p className="text-subtle text-xs mt-1">Publiczna lista korepetytorów i strona główna.</p>
@@ -635,9 +620,9 @@ export const AdminDashboard = () => {
 
                   <div className="flex flex-wrap gap-2 mb-6">
                     {[
-                      ['single', '👤 Pojedynczy użytkownik'],
-                      ['selected', '☑️ Zaznaczeni użytkownicy'],
-                      ['all', '📢 Wszyscy użytkownicy'],
+                      ['single', 'Pojedynczy użytkownik'],
+                      ['selected', 'Zaznaczeni użytkownicy'],
+                      ['all', 'Wszyscy użytkownicy'],
                     ].map(([mode, label]) => (
                       <button
                         key={mode}
@@ -794,7 +779,7 @@ export const AdminDashboard = () => {
                             Wysyłanie...
                           </span>
                         ) : (
-                          `📧 Wyślij ${
+                          `Wyślij ${
                             emailMode === 'single'
                               ? 'do użytkownika'
                               : emailMode === 'selected'

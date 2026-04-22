@@ -205,14 +205,14 @@ export const Tutors = () => {
                   </p>
 
                   {/* Rating / Active */}
-                  <div className="flex items-center justify-between pt-4 border-t border-line mb-4">
+                  {/* <div className="flex items-center justify-between pt-4 border-t border-line mb-4">
                     <span className="text-[0.85rem] text-amber-400 font-semibold flex items-center gap-1">
                       ★ {tutor.tutor_profile?.rating_avg || 'Brak ocen'}
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/10 border border-green-500/25 rounded-full text-[0.7rem] text-green-400 font-semibold">
                       ● Aktywny
                     </span>
-                  </div>
+                  </div> */}
 
                   <Link
                     to={`/tutors/${tutor.id}`}

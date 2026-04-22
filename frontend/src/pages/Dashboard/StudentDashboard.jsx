@@ -61,7 +61,7 @@ export const StudentDashboard = () => {
         {/* Greeting */}
         <div className="mb-8 animate-fade-up">
           <h1 className="text-[clamp(1.6rem,4vw,2.2rem)] font-black tracking-[-0.04em]">
-            Cześć, {user?.name?.split(' ')[0]} 👋
+            Cześć, {user?.name?.split(' ')[0]}
           </h1>
           <p className="text-subtle text-sm mt-1.5">
             {upcoming.length > 0
@@ -86,8 +86,7 @@ export const StudentDashboard = () => {
             </div>
           ) : upcoming.length === 0 ? (
             <div className="bg-surface border border-line rounded-2xl p-8 text-center">
-              <div className="text-3xl mb-3">📅</div>
-              <p className="text-subtle text-sm mb-3">Brak nadchodzących lekcji.</p>
+              <p className="text-subtle text-sm mb-3 mt-2">Brak nadchodzących lekcji.</p>
               <Link to="/tutors" className={`inline-block px-6 py-2.5 rounded-xl ${GRAD} text-white text-sm font-semibold hover:-translate-y-0.5 transition-all duration-200`}>
                 Znajdź korepetytora →
               </Link>
@@ -139,11 +138,11 @@ export const StudentDashboard = () => {
                               rel="noopener noreferrer"
                               className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200 no-underline`}
                             >
-                              {isZoomLink ? '🎥 Dołącz do spotkania Zoom' : '🎥 Dołącz do spotkania'}
+                              {isZoomLink ? 'Dołącz do spotkania Zoom' : 'Dołącz do spotkania'}
                             </a>
                           ) : (
                             <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-2 border border-line text-subtle text-[0.78rem] font-medium">
-                              🔒 Link dostępny za {minutesLeft - 10} min
+                              Link dostępny za {minutesLeft - 10} min
                             </div>
                           )}
                           {!isZoomLink && (
@@ -152,7 +151,7 @@ export const StudentDashboard = () => {
                               disabled={regenerating === b.id}
                               className={`flex items-center justify-center gap-2 w-full py-2 rounded-lg bg-blue-600/20 border border-blue-500/30 text-blue-400 text-[0.75rem] font-semibold hover:bg-blue-600/30 transition-all duration-200 cursor-pointer disabled:opacity-50`}
                             >
-                              {regenerating === b.id ? '⏳ Generuję...' : '🔄 Wygeneruj link Zoom'}
+                              {regenerating === b.id ? 'Generuję...' : 'Wygeneruj link Zoom'}
                             </button>
                           )}
                         </div>
