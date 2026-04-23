@@ -14,6 +14,9 @@ import {
   sendEmailToUser,
   sendEmailToSelected,
   sendEmailToAll,
+  getContactMessages,
+  markMessageRead,
+  replyToMessage,
 } from '../../services/admin';
 import { cancelBooking, getTutorById } from '../../services/tutors';
 
@@ -74,6 +77,12 @@ export const AdminDashboard = () => {
   const [selectedUserIds, setSelectedUserIds] = useState([]);
   const [emailUserSearch, setEmailUserSearch] = useState('');
 
+  // ─── Contact messages state ───────────────────────────────────────────────
+  const [messages, setMessages] = useState([]);
+  const [messageFilter, setMessageFilter] = useState('');
+  const [replyModal, setReplyModal] = useState(null);
+  const [replyText, setReplyText] = useState('');
+
   const loadOverview = useCallback(() => {
     getAdminOverview().then(setOverview).catch(() => {});
   }, []);
@@ -90,6 +99,12 @@ export const AdminDashboard = () => {
       .catch(() => setErr('Nie udało się wczytać użytkowników.'));
   }, [userRoleFilter]);
 
+  const loadMessages = useCallback(() => {
+    getContactMessages(messageFilter || undefined)
+      .then(setMessages)
+      .catch(() => setErr('Nie udało się wczytać wiadomości.'));
+  }, [messageFilter]);
+
   useEffect(() => {
     setLoading(true);
     setErr('');
@@ -105,6 +120,10 @@ export const AdminDashboard = () => {
   useEffect(() => {
     if (tab === 'users' || tab === 'email') loadUsers();
   }, [tab, userRoleFilter, loadUsers]);
+
+  useEffect(() => {
+    if (tab === 'messages') loadMessages();
+  }, [tab, messageFilter, loadMessages]);
 
   // Auto-clear success message
   useEffect(() => {
@@ -311,6 +330,37 @@ export const AdminDashboard = () => {
     });
   };
 
+  // ─── Contact messages handlers ────────────────────────────────────────────
+  const handleMarkRead = async (id) => {
+    setBusy(`read-${id}`);
+    try {
+      const updated = await markMessageRead(id);
+      setMessages((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    } catch (e) {
+      setErr(e.message || 'Nie udało się oznaczyć jako przeczytana.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleReply = async (e) => {
+    e.preventDefault();
+    if (!replyModal || !replyText.trim()) return;
+    setBusy('reply-message');
+    setErr('');
+    try {
+      const result = await replyToMessage(replyModal.id, replyText);
+      setSuccessMsg(`✅ ${result.message}`);
+      setReplyModal(null);
+      setReplyText('');
+      loadMessages();
+    } catch (e) {
+      setErr(e.message || 'Wysyłanie odpowiedzi nie powiodło się.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const tabBtn = (id, label, icon = '') => (
     <button
       type="button"
@@ -362,6 +412,7 @@ export const AdminDashboard = () => {
           {tabBtn('overview', 'Przegląd')}
           {tabBtn('bookings', 'Rezerwacje i linki')}
           {tabBtn('users', 'Użytkownicy')}
+          {tabBtn('messages', 'Wiadomości', '💬')}
           {tabBtn('email', 'Maile', '📧')}
         </div>
 
@@ -621,6 +672,116 @@ export const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* ─── Messages tab ─────────────────────────────────────────────────── */}
+            {tab === 'messages' && (
+              <div className="animate-fade-up space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="text-subtle text-xs">Status wiadomości</label>
+                  <select
+                    value={messageFilter}
+                    onChange={(e) => setMessageFilter(e.target.value)}
+                    className={`${INPUT} w-auto max-w-xs py-2`}
+                  >
+                    <option value="">Wszystkie</option>
+                    <option value="new">Nowe</option>
+                    <option value="read">Przeczytane</option>
+                    <option value="replied">Odpowiedziane</option>
+                  </select>
+                  <span className="text-xs text-subtle">
+                    {messages.filter((m) => m.status === 'new').length} nowych wiadomości
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={`bg-surface border rounded-2xl p-5 transition-colors duration-200 ${
+                        m.status === 'new'
+                          ? 'border-accent/40 bg-accent/[0.03]'
+                          : m.status === 'replied'
+                          ? 'border-green-500/25'
+                          : 'border-line'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-sm">{m.name}</span>
+                            <span className={`text-[0.65rem] px-2 py-0.5 rounded-full font-medium ${
+                              m.status === 'new'
+                                ? 'bg-accent/10 border border-accent/25 text-violet-300'
+                                : m.status === 'replied'
+                                ? 'bg-green-500/10 border border-green-500/25 text-green-400'
+                                : 'bg-surface-2 border border-line text-subtle'
+                            }`}>
+                              {m.status === 'new' ? 'Nowa' : m.status === 'replied' ? 'Odpowiedziana' : 'Przeczytana'}
+                            </span>
+                          </div>
+                          <div className="text-xs text-subtle break-all">{m.email}</div>
+                        </div>
+                        <div className="text-xs text-faint whitespace-nowrap shrink-0">
+                          {new Date(m.created_at).toLocaleString('pl-PL', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="text-sm font-medium mb-1.5">{m.subject}</div>
+                        <p className="text-sm text-subtle leading-[1.7] whitespace-pre-wrap">{m.message}</p>
+                      </div>
+
+                      {m.admin_reply && (
+                        <div className="mt-3 pt-3 border-t border-line">
+                          <div className="text-[0.65rem] text-accent font-semibold uppercase tracking-wide mb-1">Twoja odpowiedź</div>
+                          <p className="text-sm text-subtle leading-[1.7] whitespace-pre-wrap">{m.admin_reply}</p>
+                          {m.replied_at && (
+                            <div className="text-[0.65rem] text-faint mt-1">
+                              Wysłano: {new Date(m.replied_at).toLocaleString('pl-PL')}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-line/50">
+                        {m.status === 'new' && (
+                          <button
+                            type="button"
+                            className={BTN_SECONDARY}
+                            disabled={busy === `read-${m.id}`}
+                            onClick={() => handleMarkRead(m.id)}
+                          >
+                            {busy === `read-${m.id}` ? '…' : '✓ Oznacz jako przeczytana'}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer font-sans border ${GRAD} text-white border-transparent hover:-translate-y-0.5`}
+                          onClick={() => {
+                            setReplyModal(m);
+                            setReplyText(m.admin_reply || '');
+                          }}
+                        >
+                          {m.status === 'replied' ? '✏️ Edytuj odpowiedź' : '💬 Odpowiedz'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {messages.length === 0 && (
+                    <div className="bg-surface border border-line rounded-2xl p-12 text-center">
+                      <div className="text-3xl mb-3">📭</div>
+                      <div className="text-subtle text-sm">Brak wiadomości z podanym filtrem.</div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -960,6 +1121,54 @@ export const AdminDashboard = () => {
                 </button>
                 <button type="submit" disabled={busy === 'save-tutor'} className={`px-4 py-2 rounded-xl text-sm font-semibold text-white ${GRAD} disabled:opacity-50`}>
                   {busy === 'save-tutor' ? 'Zapisywanie…' : 'Zapisz'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: reply to contact message */}
+      {replyModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <div className="bg-surface border border-line rounded-2xl p-6 max-w-lg w-full shadow-xl">
+            <h3 className="font-bold text-lg mb-1">Odpowiedź na wiadomość</h3>
+            <p className="text-subtle text-xs mb-1">Od: {replyModal.name} ({replyModal.email})</p>
+            <p className="text-subtle text-xs mb-4">Temat: {replyModal.subject}</p>
+
+            <div className="bg-surface-2 border border-line rounded-xl p-4 mb-4 max-h-32 overflow-y-auto">
+              <div className="text-[0.65rem] text-faint uppercase tracking-wide mb-1">Oryginalna wiadomość</div>
+              <p className="text-xs text-subtle leading-[1.7] whitespace-pre-wrap">{replyModal.message}</p>
+            </div>
+
+            <form onSubmit={handleReply} className="space-y-4">
+              <div>
+                <label className="text-xs text-subtle block mb-1.5">Treść odpowiedzi</label>
+                <textarea
+                  className={`${INPUT} min-h-[140px] resize-y`}
+                  placeholder="Napisz odpowiedź..."
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  required
+                  maxLength={5000}
+                />
+                <p className="text-xs text-faint mt-1 text-right">{replyText.length} / 5000</p>
+              </div>
+              <div className="flex gap-2 justify-end pt-2">
+                <button type="button" className={BTN_SECONDARY} onClick={() => { setReplyModal(null); setReplyText(''); }}>
+                  Zamknij
+                </button>
+                <button
+                  type="submit"
+                  disabled={busy === 'reply-message' || !replyText.trim()}
+                  className={`px-5 py-2 rounded-xl text-sm font-semibold text-white ${GRAD} disabled:opacity-50 cursor-pointer border-0 font-sans`}
+                >
+                  {busy === 'reply-message' ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                      Wysyłanie...
+                    </span>
+                  ) : '📧 Wyślij odpowiedź emailem'}
                 </button>
               </div>
             </form>

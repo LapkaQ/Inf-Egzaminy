@@ -40,3 +40,16 @@ export const sendEmailToSelected = (userIds: number[], subject: string, message:
 
 export const sendEmailToAll = (subject: string, message: string, roleFilter?: string) =>
   api.post('/admin/email/all', { subject, message, role_filter: roleFilter || null });
+
+// ─── Contact messages ─────────────────────────────────────────────────────
+
+export const getContactMessages = (status?: string) => {
+  const q = status ? `?status=${encodeURIComponent(status)}` : '';
+  return api.get(`/contact/messages${q}`);
+};
+
+export const markMessageRead = (id: number) =>
+  api.patch(`/contact/messages/${id}/read`, {});
+
+export const replyToMessage = (id: number, replyMessage: string) =>
+  api.post(`/contact/messages/${id}/reply`, { reply_message: replyMessage });

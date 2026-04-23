@@ -17,6 +17,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
+import Contact from './pages/Contact';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="tutors/:id" element={<TutorDetails />} />
             <Route path="privacy-policy" element={<PrivacyPolicy />} />
             <Route path="terms" element={<Terms />} />
+            <Route path="contact" element={<Contact />} />
 
             {/* Weryfikacja email i reset hasła — dostępne publicznie */}
             <Route path="verify-email" element={<VerifyEmail />} />

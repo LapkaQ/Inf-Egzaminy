@@ -1,0 +1,25 @@
+{% extends "base_template.html" %}
+{% block content %}
+<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+  Cześć, {{ name }}! 📩
+</h1>
+<p style="font-size:14px;color:#c8c8d8;line-height:1.8;margin:16px 0;">
+  Dziękujemy za skontaktowanie się z nami. Otrzymaliśmy Twoją wiadomość dotyczącą:
+</p>
+<div style="background-color:#141419;border:1px solid #1f1f2a;border-radius:12px;padding:20px;margin:20px 0;">
+  <p style="margin:0;font-size:13px;color:#7a7a96;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">
+    Temat
+  </p>
+  <p style="margin:4px 0 0;font-size:15px;color:#ffffff;font-weight:600;">
+    {{ subject }}
+  </p>
+</div>
+<p style="font-size:14px;color:#c8c8d8;line-height:1.8;margin:16px 0;">
+  Nasz zespół odpowie na Twoją wiadomość najszybciej jak to możliwe,
+  zwykle w ciągu <strong style="color:#ffffff;">24 godzin</strong> w dni robocze.
+</p>
+<p style="font-size:13px;color:#7a7a96;line-height:1.8;margin:24px 0 0;">
+  Nie musisz odpowiadać na tego maila. Jeśli masz dodatkowe pytania,
+  napisz ponownie przez formularz kontaktowy na naszej stronie.
+</p>
+{% endblock %}

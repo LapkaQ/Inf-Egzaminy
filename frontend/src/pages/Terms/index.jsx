@@ -54,7 +54,7 @@ const SECTIONS = [
       'Serwis umożliwia wyszukiwanie korepetytorów, rezerwację lekcji online, zarządzanie kalendarzem zajęć oraz wystawianie opinii.',
       'Korzystanie z Serwisu wymaga akceptacji niniejszego Regulaminu oraz Polityki Prywatności.',
       'Serwis jest dostępny pod adresem: inf-egzaminy.pl.',
-      'Kontakt z obsługą klienta: e-mail kontakt@inf-egzaminy.pl, tel. +48 XXX XXX XXX.',
+      'Kontakt z obsługą klienta: e-mail kontakt@inf-egzaminy.pl.',
     ],
   },
   {
@@ -113,7 +113,7 @@ const SECTIONS = [
     content: null,
     list: [
       'Użytkownik ma prawo zgłosić reklamację dotyczącą działania Serwisu lub zrealizowanej usługi.',
-      'Reklamacje należy składać na adres e-mail: kontakt@inf-egzaminy.pl lub telefonicznie pod numerem: +48 XXX XXX XXX.',
+      'Reklamacje należy składać na adres e-mail: kontakt@inf-egzaminy.pl.',
       'Reklamacja powinna zawierać: dane Użytkownika (imię, nazwisko, adres e-mail), opis problemu oraz oczekiwany sposób rozwiązania.',
       'Usługodawca rozpatruje reklamację w terminie 14 dni roboczych od dnia jej otrzymania.',
       'Odpowiedź na reklamację zostanie przesłana na adres e-mail podany w zgłoszeniu.',

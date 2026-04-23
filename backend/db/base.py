@@ -27,4 +27,4 @@ def get_db():
         db.close()
 
 
-import models.availability, models.booking, models.session, models.tutor, models.user, models.weekly_schedule
+import models.availability, models.booking, models.session, models.tutor, models.user, models.weekly_schedule, models.contact_message

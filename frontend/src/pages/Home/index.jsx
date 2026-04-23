@@ -431,6 +431,7 @@ export const Home = () => {
               {
                 title: 'Kontakt',
                 links: [
+                  { label: 'Formularz kontaktowy', to: '/contact' },
                   { label: 'kontakt@inf-egzaminy.pl', to: '#' },
                   { label: 'Regulamin', to: '/terms' },
                   { label: 'Polityka prywatności', to: '/privacy-policy' },

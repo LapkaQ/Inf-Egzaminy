@@ -1,0 +1,35 @@
+{% extends "base_template.html" %}
+{% block content %}
+<h1 style="margin:0 0 8px;font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+  Cześć, {{ name }}! 💬
+</h1>
+<p style="font-size:14px;color:#c8c8d8;line-height:1.8;margin:16px 0;">
+  Odpowiadamy na Twoją wiadomość wysłaną przez formularz kontaktowy.
+</p>
+
+<!-- Original message -->
+<div style="background-color:#141419;border:1px solid #1f1f2a;border-radius:12px;padding:20px;margin:20px 0;">
+  <p style="margin:0;font-size:11px;color:#7a7a96;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">
+    Twoja wiadomość
+  </p>
+  <p style="margin:6px 0 0;font-size:13px;color:#7a7a96;font-style:italic;line-height:1.7;">
+    <strong style="color:#c8c8d8;">Temat:</strong> {{ original_subject }}<br>
+    {{ original_message | replace('\n', '<br>') }}
+  </p>
+</div>
+
+<!-- Admin reply -->
+<div style="background-color:#0e0e12;border-left:3px solid #7c3aed;border-radius:0 12px 12px 0;padding:20px;margin:20px 0;">
+  <p style="margin:0;font-size:11px;color:#7c3aed;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;">
+    Nasza odpowiedź
+  </p>
+  <div style="margin:8px 0 0;font-size:14px;color:#c8c8d8;line-height:1.8;">
+    {{ reply | replace('\n', '<br>') }}
+  </div>
+</div>
+
+<p style="font-size:13px;color:#7a7a96;line-height:1.8;margin:24px 0 0;">
+  Jeśli masz dodatkowe pytania, odpowiedz bezpośrednio na tego maila
+  lub skontaktuj się z nami ponownie przez formularz kontaktowy.
+</p>
+{% endblock %}
