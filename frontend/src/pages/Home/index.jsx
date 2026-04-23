@@ -433,7 +433,7 @@ export const Home = () => {
                 links: [
                   { label: 'kontakt@KorINF.pl', to: '#' },
                   { label: 'FAQ', to: '#' },
-                  { label: 'Regulamin', to: '#' },
+                  { label: 'Polityka prywatności', to: '/privacy-policy' },
                 ],
               },
             ].map((col) => (

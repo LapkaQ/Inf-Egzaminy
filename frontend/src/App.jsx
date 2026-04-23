@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route index element={<Home />} />
             <Route path="tutors" element={<Tutors />} />
             <Route path="tutors/:id" element={<TutorDetails />} />
+            <Route path="privacy-policy" element={<PrivacyPolicy />} />
 
             {/* Weryfikacja email i reset hasła — dostępne publicznie */}
             <Route path="verify-email" element={<VerifyEmail />} />
