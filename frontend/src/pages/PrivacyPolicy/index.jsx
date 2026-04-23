@@ -33,7 +33,7 @@ const SECTIONS = [
   {
     id: 'administrator',
     title: '1. Administrator danych osobowych',
-    content: `Administratorem Twoich danych osobowych jest KorINF („Platforma"), dostępna pod adresem korinf.pl. Wszelkie pytania dotyczące przetwarzania danych osobowych można kierować na adres e-mail: kontakt@korinf.pl.`,
+    content: `Administratorem Twoich danych osobowych jest Wojciech Gawryluk, prowadzący serwis inf-egzaminy.pl („Platforma"), z siedzibą pod adresem: ul. Wierzbowa 3a/1, 15-743 Białystok. Wszelkie pytania dotyczące przetwarzania danych osobowych można kierować na adres e-mail: kontakt@inf-egzaminy.pl.`,
   },
   {
     id: 'zakres',
@@ -93,7 +93,7 @@ const SECTIONS = [
       'Prawo do wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO)',
     ],
     footer:
-      'W celu realizacji powyższych praw skontaktuj się z nami pod adresem: kontakt@korinf.pl.',
+      'W celu realizacji powyższych praw skontaktuj się z nami pod adresem: kontakt@inf-egzaminy.pl.',
   },
   {
     id: 'udostepnianie',
@@ -124,7 +124,7 @@ const SECTIONS = [
   {
     id: 'zmiany',
     title: '10. Zmiany w polityce prywatności',
-    content: `Zastrzegamy sobie prawo do wprowadzania zmian w niniejszej Polityce Prywatności. O istotnych zmianach będziemy informować poprzez powiadomienie na Platformie lub wiadomość e-mail. Aktualna wersja Polityki Prywatności jest zawsze dostępna na stronie korinf.pl/privacy-policy.`,
+    content: `Zastrzegamy sobie prawo do wprowadzania zmian w niniejszej Polityce Prywatności. O istotnych zmianach będziemy informować poprzez powiadomienie na Platformie lub wiadomość e-mail. Aktualna wersja Polityki Prywatności jest zawsze dostępna na stronie inf-egzaminy.pl/privacy-policy.`,
   },
 ]
 

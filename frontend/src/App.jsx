@@ -16,6 +16,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="tutors" element={<Tutors />} />
             <Route path="tutors/:id" element={<TutorDetails />} />
             <Route path="privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="terms" element={<Terms />} />
 
             {/* Weryfikacja email i reset hasła — dostępne publicznie */}
             <Route path="verify-email" element={<VerifyEmail />} />

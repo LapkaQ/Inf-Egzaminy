@@ -431,8 +431,8 @@ export const Home = () => {
               {
                 title: 'Kontakt',
                 links: [
-                  { label: 'kontakt@KorINF.pl', to: '#' },
-                  { label: 'FAQ', to: '#' },
+                  { label: 'kontakt@inf-egzaminy.pl', to: '#' },
+                  { label: 'Regulamin', to: '/terms' },
                   { label: 'Polityka prywatności', to: '/privacy-policy' },
                 ],
               },
