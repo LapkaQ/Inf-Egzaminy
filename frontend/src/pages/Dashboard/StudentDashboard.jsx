@@ -108,7 +108,7 @@ export const StudentDashboard = () => {
           <div className="mb-6 animate-fade-up [animation-delay:0.05s]">
             <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
-
+                <span className="text-lg">💳</span>
                 <h3 className="font-bold text-[0.95rem] text-orange-400">Lekcje do opłacenia</h3>
               </div>
               <div className="flex flex-col gap-2">
@@ -169,7 +169,7 @@ export const StudentDashboard = () => {
                     <div className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3.5">
                         <div className={`w-10 h-10 rounded-lg ${isAwaitingPayment ? 'bg-orange-500/20 text-orange-400' : GRAD + ' text-white'} flex items-center justify-center text-xs font-bold shrink-0`}>
-                          {isAwaitingPayment ? '$' : '#'}
+                          {isAwaitingPayment ? '💳' : '📅'}
                         </div>
                         <div>
                           <div className="font-semibold text-sm capitalize">{date}</div>

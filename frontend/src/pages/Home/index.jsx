@@ -19,32 +19,32 @@ const TAG =
 
 const FEATURES = [
   {
-    icon: '◎',
+    icon: '🎯',
     title: 'INF.03 i INF.04',
     desc: 'Specjalizujemy się wyłącznie w egzaminach zawodowych z kwalifikacji informatycznych technika informatyka.',
   },
   {
-    icon: '↗',
+    icon: '👤',
     title: 'Indywidualne podejście',
     desc: 'Każdy uczeń jest inny. Korepetytor dostosuje tempo i zakres materiału do Twoich potrzeb.',
   },
   {
-    icon: '▦',
+    icon: '📅',
     title: 'Elastyczny kalendarz',
     desc: 'Rezerwuj lekcje kiedy chcesz. System kalendarza online z zarządzaniem dostępnością korepetytora.',
   },
   {
-    icon: '✓',
+    icon: '✅',
     title: 'Weryfikowani korepetytorzy',
     desc: 'Każdy korepetytor posiada udokumentowane doświadczenie i wysoką zdawalność swoich uczniów.',
   },
   {
-    icon: '⇄',
+    icon: '💬',
     title: 'Feedback po lekcji',
     desc: 'Po każdej sesji otrzymasz podsumowanie postępów i wskazówki do dalszej nauki.',
   },
   {
-    icon: '⊘',
+    icon: '🔐',
     title: 'Bezpieczna platforma',
     desc: 'Transparentne płatności, bezpieczne dane i wygodna komunikacja w jednym miejscu.',
   },

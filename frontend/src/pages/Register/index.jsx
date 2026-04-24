@@ -68,7 +68,7 @@ export const Register = () => {
           </div>
 
           <div className="w-20 h-20 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center mx-auto text-4xl mb-6 animate-scale-in [animation-delay:0.1s]">
-
+            📧
           </div>
 
           <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white">
@@ -197,7 +197,7 @@ export const Register = () => {
               onChange={(e) => setRole(e.target.value)}
             >
               <option value="student">Uczniem — szukam korepetytora</option>
-              <option value="tutor">Korepetytorem — chcę uczyć</option>
+              <option value="tutor" disabled>Korepetytorem — rejestracja zamknięta</option>
             </select>
           </div>
           <button

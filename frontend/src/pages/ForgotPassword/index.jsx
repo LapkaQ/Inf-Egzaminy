@@ -44,7 +44,7 @@ const ForgotPassword = () => {
         {sent ? (
           <>
             <div className="w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto text-4xl mb-6 animate-scale-in">
-
+              📧
             </div>
             <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white text-center">
               Sprawdź pocztę

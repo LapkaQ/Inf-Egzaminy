@@ -247,7 +247,7 @@ export const PaymentPage = () => {
             {/* Error */}
             {payError && (
               <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm flex items-center gap-2">
-                {payError}
+                ❌ {payError}
               </div>
             )}
 

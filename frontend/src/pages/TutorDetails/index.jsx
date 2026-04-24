@@ -412,12 +412,12 @@ export const TutorDetails = () => {
 
                 {bookSuccess && (
                   <div className="mb-4 p-4 bg-green-500/10 border border-green-500/25 rounded-xl text-green-400 text-sm flex items-center gap-2">
-                    {bookSuccess}
+                    ✅ {bookSuccess}
                   </div>
                 )}
                 {bookError && (
                   <div className="mb-4 p-4 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm flex items-center gap-2">
-                    {bookError}
+                    ❌ {bookError}
                   </div>
                 )}
 

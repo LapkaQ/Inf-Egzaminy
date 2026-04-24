@@ -38,17 +38,17 @@ const VerifyEmail = () => {
     ),
     success: (
       <div className="w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto text-4xl animate-scale-in">
-
+        ✅
       </div>
     ),
     already: (
       <div className="w-20 h-20 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center mx-auto text-4xl animate-scale-in">
-
+        ℹ️
       </div>
     ),
     error: (
       <div className="w-20 h-20 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto text-4xl animate-scale-in">
-
+        ❌
       </div>
     ),
   }

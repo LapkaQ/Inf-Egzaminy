@@ -388,10 +388,10 @@ export const TutorDashboard = () => {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {[
-                { label: 'Nadchodzące lekcje', value: upcoming.length,     icon: '—' },
-                { label: 'Wolne sloty',         value: futureSlots.length,  icon: '—' },
-                { label: 'Łącznie lekcji',      value: bookings.length,     icon: '—' },
-                { label: 'Cena / godz.',         value: profile ? `${profile.price_per_hour} zł` : '—', icon: '—' },
+                { label: 'Nadchodzące lekcje', value: upcoming.length,     icon: '📅' },
+                { label: 'Wolne sloty',         value: futureSlots.length,  icon: '🗓️' },
+                { label: 'Łącznie lekcji',      value: bookings.length,     icon: '📚' },
+                { label: 'Cena / godz.',         value: profile ? `${profile.price_per_hour} zł` : '—', icon: '💰' },
               ].map(s => (
                 <div key={s.label} className="bg-surface border border-line rounded-2xl p-5">
                   <div className="text-xl mb-2">{s.icon}</div>
@@ -476,7 +476,7 @@ export const TutorDashboard = () => {
                   <div className="font-bold mb-0.5">{user?.name}</div>
                   <div className="text-[0.8rem] text-subtle mb-3">{user?.email}</div>
                   <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-accent/10 border border-accent/25 rounded-full text-xs font-semibold text-violet-300">
-                    Korepetytor
+                    🎓 Korepetytor
                   </span>
                 </div>
                 <div className="bg-surface border border-line rounded-2xl p-6">
@@ -532,7 +532,7 @@ export const TutorDashboard = () => {
               <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-surface rounded-xl animate-pulse" />)}</div>
             ) : slots.length === 0 ? (
               <div className="bg-surface border border-line rounded-2xl p-10 text-center text-subtle">
-                <div className="text-3xl mb-3"></div>
+                <div className="text-3xl mb-3">📅</div>
                 <p className="text-sm">Brak terminów. Ustaw harmonogram tygodniowy, aby automatycznie wygenerować sloty.</p>
                 <button onClick={() => setTab('Harmonogram')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">Ustaw harmonogram →</button>
               </div>
