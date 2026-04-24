@@ -18,6 +18,7 @@ import ResetPassword from './pages/ResetPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import Contact from './pages/Contact';
+import PaymentPage from './pages/Payment';
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
             {/* Tylko dla zalogowanych */}
             <Route element={<ProtectedRoute />}>
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="payment/:bookingId" element={<PaymentPage />} />
             </Route>
           </Route>
         </Routes>

@@ -8,6 +8,7 @@ from datetime import datetime
 
 class BookingStatus(enum.Enum):
     pending = "pending"
+    awaiting_payment = "awaiting_payment"
     confirmed = "confirmed"
     cancelled = "cancelled"
 
@@ -23,7 +24,7 @@ class Booking(Base):
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
 
-    status = Column(Enum(BookingStatus), default=BookingStatus.pending)
+    status = Column(Enum(BookingStatus), default=BookingStatus.awaiting_payment)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -35,3 +36,4 @@ class Booking(Base):
         "User", foreign_keys=[tutor_id], back_populates="bookings_as_tutor"
     )
     session = relationship("Session", back_populates="booking", uselist=False)
+    payment = relationship("Payment", back_populates="booking", uselist=False)

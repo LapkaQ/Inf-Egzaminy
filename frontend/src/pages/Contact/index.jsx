@@ -198,7 +198,7 @@ export const Contact = () => {
                       Wysyłanie...
                     </span>
                   ) : (
-                    '📩 Wyślij wiadomość'
+                    'Wyślij wiadomość'
                   )}
                 </button>
               </form>
@@ -229,21 +229,9 @@ export const Contact = () => {
               </div>
             </div>
 
-            <div className="reveal delay-3">
-              <div className="bg-surface border border-line rounded-2xl p-6">
-                <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-lg mb-4">
-                  📍
-                </div>
-                <div className="font-bold text-sm mb-1">Adres</div>
-                <p className="text-subtle text-sm">
-                  ul. Wierzbowa 3a/1
-                  <br />
-                  15-743 Białystok
-                </p>
-              </div>
-            </div>
 
-            <div className="reveal delay-4">
+
+            <div className="reveal delay-3">
               <div className="p-px bg-gradient-to-br from-accent/50 to-accent-2/50 rounded-2xl">
                 <div className="bg-surface rounded-[14px] p-6">
                   <div className="font-bold text-sm mb-2">Szybkie linki</div>
@@ -252,19 +240,19 @@ export const Contact = () => {
                       to="/terms"
                       className="block text-sm text-subtle hover:text-white transition-colors"
                     >
-                      📄 Regulamin
+                      Regulamin
                     </Link>
                     <Link
                       to="/privacy-policy"
                       className="block text-sm text-subtle hover:text-white transition-colors"
                     >
-                      🔒 Polityka prywatności
+                      Polityka prywatności
                     </Link>
                     <Link
                       to="/tutors"
                       className="block text-sm text-subtle hover:text-white transition-colors"
                     >
-                      👨‍🏫 Korepetytorzy
+                      Korepetytorzy
                     </Link>
                   </div>
                 </div>

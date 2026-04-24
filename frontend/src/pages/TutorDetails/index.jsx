@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   getTutorById,
   getTutorSlots,
@@ -97,7 +97,7 @@ const BookingModal = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-center mb-6">
-          <div className="text-4xl mb-3">📅</div>
+          <div className="text-4xl mb-3"></div>
           <h3 className="text-lg font-bold">Potwierdź rezerwację</h3>
           <p className="text-subtle text-sm mt-1">
             Czy chcesz zarezerwować tę lekcję?
@@ -161,6 +161,7 @@ const BookingModal = ({
 export const TutorDetails = () => {
   const { id } = useParams()
   const { isAuthenticated, user } = useAuth()
+  const navigate = useNavigate()
 
   const [tutorUser, setTutorUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -241,11 +242,19 @@ export const TutorDetails = () => {
     setBookingLoading(true)
     setBookError('')
     try {
-      await createBooking(selectedSlot.id)
-      setBookSuccess('Rezerwacja udana! Sprawdź swój dashboard.')
+      const result = await createBooking(selectedSlot.id)
       setSlots((prev) => prev.filter((s) => s.id !== selectedSlot.id))
       setSelectedSlot(null)
-      setTimeout(() => setBookSuccess(''), 6000)
+
+      // Sprawdź czy wymaga natychmiastowej płatności
+      if (result.requires_immediate_payment) {
+        // Lekcja < 24h — przekieruj na stronę płatności
+        navigate(`/payment/${result.id}`)
+      } else {
+        // Lekcja >= 24h — info o mailu
+        setBookSuccess('Rezerwacja udana! Otrzymasz email z przypomnieniem o płatności 24h przed lekcją.')
+        setTimeout(() => setBookSuccess(''), 8000)
+      }
     } catch (e) {
       setBookError(e.message || 'Nie udało się zarezerwować. Spróbuj ponownie.')
       setSelectedSlot(null)
@@ -269,7 +278,7 @@ export const TutorDetails = () => {
     return (
       <div className="min-h-screen bg-page text-white pt-[90px] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">😕</div>
+          <div className="text-4xl mb-4"></div>
           <h2 className="text-xl font-bold mb-2">Brak profilu korepetytora</h2>
           <p className="text-subtle mb-6">
             Ten użytkownik nie stworzył jeszcze profilu korepetytora.
@@ -521,7 +530,7 @@ export const TutorDetails = () => {
 
                 {futureSlots.length === 0 && (
                   <div className="mt-4 bg-surface border border-line rounded-2xl p-8 text-center text-subtle">
-                    <div className="text-3xl mb-3">📅</div>
+
                     <p className="text-sm">
                       Brak dostępnych terminów. Sprawdź ponownie wkrótce.
                     </p>
@@ -545,10 +554,10 @@ export const TutorDetails = () => {
                 </p>
 
                 <div className="space-y-2.5 mb-6 text-[0.83rem] text-subtle">
-                  <div>✅ Weryfikowany korepetytor</div>
-                  <div>📅 {futureSlots.length} dostępnych terminów</div>
-                  <div>💬 Kontakt 7 dni w tygodniu</div>
-                  <div>📊 Raporty postępów po lekcji</div>
+                  <div>Weryfikowany korepetytor</div>
+                  <div>{futureSlots.length} dostępnych terminów</div>
+                  <div>Kontakt 7 dni w tygodniu</div>
+                  <div>Raporty postępów po lekcji</div>
                 </div>
 
                 {isAuthenticated ? (

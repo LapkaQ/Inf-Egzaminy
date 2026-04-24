@@ -3,6 +3,7 @@ from sqlalchemy import or_
 from fastapi import HTTPException, status
 import uuid
 import logging
+from datetime import datetime, timedelta
 from models.booking import Booking, BookingStatus
 from models.availability import AvailabilitySlot
 from models.user import User, UserRole
@@ -14,13 +15,16 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# Próg czasowy: jak blisko lekcji jest rezerwacja, żeby wymagać natychmiastowej płatności
+IMMEDIATE_PAYMENT_THRESHOLD_HOURS = 24
+
 
 def _zoom_is_configured() -> bool:
     """Sprawdza czy dane Zoom API zostały podane w .env"""
     return bool(settings.ZOOM_ACCOUNT_ID and settings.ZOOM_CLIENT_ID and settings.ZOOM_CLIENT_SECRET)
 
 
-def create_booking(db: Session, current_user: User, booking_data: BookingCreate) -> Booking:
+def create_booking(db: Session, current_user: User, booking_data: BookingCreate) -> dict:
     # Lock the availability slot for this transaction!
     # SELECT ... FOR UPDATE chroni przed sytuacją gdy 2 użytkowników klika w tym samym ułamku sekundy
     slot = db.query(AvailabilitySlot).filter(AvailabilitySlot.id == booking_data.availability_slot_id).with_for_update().first()
@@ -46,13 +50,17 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
             status_code=status.HTTP_400_BAD_REQUEST, 
             detail="Slot is already booked. Somebody secured it right before you!"
         )
-        
+
+    # ── Oblicz czy lekcja wymaga natychmiastowej płatności ──
+    time_until_lesson = slot.start_time - datetime.utcnow()
+    requires_immediate = time_until_lesson < timedelta(hours=IMMEDIATE_PAYMENT_THRESHOLD_HOURS)
+
     new_booking = Booking(
         student_id=current_user.id,
         tutor_id=tutor_profile.user_id,
         start_time=slot.start_time,
         end_time=slot.end_time,
-        status=BookingStatus.confirmed
+        status=BookingStatus.awaiting_payment  # Booking czeka na płatność!
     )
     db.add(new_booking)
     db.flush() # pobieramy new_booking.id zanim zrobimy pełen commit
@@ -94,13 +102,55 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
     
     db.commit()
     db.refresh(new_booking)
-    return new_booking
+
+    # ── Wyślij mail z przypomnieniem o płatności (w tle) ──
+    try:
+        from services.mail_service import send_payment_reminder_email
+        payment_url = f"{settings.FRONTEND_APP_URL}/payment/{new_booking.id}"
+
+        # Pobierz imiona
+        tutor_user = db.query(User).filter(User.id == tutor_profile.user_id).first()
+        tutor_name = tutor_user.name if tutor_user else f"Korepetytor #{tutor_profile.user_id}"
+
+        # Oblicz kwotę
+        duration_hours = (slot.end_time - slot.start_time).total_seconds() / 3600
+        amount = int(tutor_profile.price_per_hour * duration_hours)
+
+        # Formatuj datę i czas
+        lesson_date = slot.start_time.strftime("%d.%m.%Y (%A)")
+        lesson_time = f"{slot.start_time.strftime('%H:%M')} – {slot.end_time.strftime('%H:%M')}"
+
+        send_payment_reminder_email(
+            recipient_email=current_user.email,
+            name=current_user.name,
+            tutor_name=tutor_name,
+            lesson_date=lesson_date,
+            lesson_time=lesson_time,
+            amount=amount,
+            payment_link=payment_url,
+        )
+    except Exception as e:
+        logger.error("Failed to send payment reminder email for booking %s: %s", new_booking.id, e)
+
+    # ── Zwracamy rozszerzoną odpowiedź ──
+    return {
+        "id": new_booking.id,
+        "student_id": new_booking.student_id,
+        "tutor_id": new_booking.tutor_id,
+        "start_time": new_booking.start_time,
+        "end_time": new_booking.end_time,
+        "status": new_booking.status,
+        "session": new_booking.session,
+        "requires_immediate_payment": requires_immediate,
+        "payment_url": f"{settings.FRONTEND_APP_URL}/payment/{new_booking.id}",
+    }
 
 
 def get_my_bookings(db: Session, current_user: User):
     """Pobiera rezerwacje zalogowanego użytkownika (zarówno jako uczeń i jako nauczyciel)"""
     return db.query(Booking).options(
-        joinedload(Booking.session)
+        joinedload(Booking.session),
+        joinedload(Booking.payment),
     ).filter(
         or_(
             Booking.student_id == current_user.id,
@@ -121,6 +171,9 @@ def cancel_booking(db: Session, current_user: User, booking_id: int):
         
     if booking.status == BookingStatus.cancelled:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Rezerwacja została już anulowana wcześniej")
+
+    if booking.status == BookingStatus.confirmed:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nie można anulować opłaconej lekcji")
         
     booking.status = BookingStatus.cancelled
     

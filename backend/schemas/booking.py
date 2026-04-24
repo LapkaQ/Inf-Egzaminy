@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from models.booking import BookingStatus
+from models.payment import PaymentStatus
 
 class BookingCreate(BaseModel):
     availability_slot_id: int
@@ -14,6 +15,15 @@ class SessionResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class PaymentBriefResponse(BaseModel):
+    id: int
+    amount: int
+    status: PaymentStatus
+    paid_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
 class BookingResponse(BaseModel):
     id: int
     student_id: int
@@ -22,6 +32,9 @@ class BookingResponse(BaseModel):
     end_time: datetime
     status: BookingStatus
     session: Optional[SessionResponse] = None
+    payment: Optional[PaymentBriefResponse] = None
+    requires_immediate_payment: Optional[bool] = None
+    payment_url: Optional[str] = None
     
     class Config:
         from_attributes = True

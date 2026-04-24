@@ -1,0 +1,59 @@
+{% extends "base_template.html" %}
+
+{% block content %}
+<h2 style="margin:0 0 16px;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">
+  Przypomnienie o płatności 💳
+</h2>
+
+<p style="margin:0 0 20px;font-size:14px;color:#b0b0c8;line-height:1.7;">
+  Cześć{% if name %}, <strong style="color:#ffffff;">{{ name }}</strong>{% endif %}!
+</p>
+
+<p style="margin:0 0 20px;font-size:14px;color:#b0b0c8;line-height:1.7;">
+  Zbliża się Twoja lekcja korepetycji. Aby potwierdzić rezerwację, opłać lekcję przed jej rozpoczęciem.
+</p>
+
+<!-- Szczegóły lekcji -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#141419;border:1px solid #1f1f2a;border-radius:12px;margin-bottom:24px;">
+  <tr>
+    <td style="padding:20px 24px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="font-size:12px;color:#7a7a96;padding-bottom:8px;">📅 Data lekcji</td>
+          <td style="font-size:14px;color:#ffffff;font-weight:600;text-align:right;padding-bottom:8px;">{{ lesson_date }}</td>
+        </tr>
+        <tr>
+          <td style="font-size:12px;color:#7a7a96;padding-bottom:8px;">🕐 Godziny</td>
+          <td style="font-size:14px;color:#ffffff;font-weight:600;text-align:right;padding-bottom:8px;">{{ lesson_time }}</td>
+        </tr>
+        <tr>
+          <td style="font-size:12px;color:#7a7a96;padding-bottom:8px;">👨‍🏫 Korepetytor</td>
+          <td style="font-size:14px;color:#ffffff;font-weight:600;text-align:right;padding-bottom:8px;">{{ tutor_name }}</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="border-top:1px solid #1f1f2a;padding-top:12px;"></td>
+        </tr>
+        <tr>
+          <td style="font-size:13px;color:#7a7a96;font-weight:600;">💰 Do zapłaty</td>
+          <td style="font-size:20px;color:#7c3aed;font-weight:900;text-align:right;">{{ amount }} zł</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- CTA Button -->
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+  <tr>
+    <td align="center">
+      <a href="{{ payment_link }}" style="display:inline-block;padding:14px 40px;background:linear-gradient(135deg,#7c3aed 0%,#3b82f6 100%);color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:12px;letter-spacing:0.3px;">
+        Opłać lekcję →
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:24px 0 0;font-size:12px;color:#444455;line-height:1.7;text-align:center;">
+  Jeśli nie opłacisz lekcji przed jej rozpoczęciem, rezerwacja zostanie automatycznie anulowana.
+</p>
+{% endblock %}

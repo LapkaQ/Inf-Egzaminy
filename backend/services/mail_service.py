@@ -100,3 +100,28 @@ def send_welcome_verified_email(recipient_email: str, name: str):
         },
     )
     send_email(recipient_email, "Witaj w KorINF! 🎉", body)
+
+
+def send_payment_reminder_email(
+    recipient_email: str,
+    name: str,
+    tutor_name: str,
+    lesson_date: str,
+    lesson_time: str,
+    amount: int,
+    payment_link: str,
+):
+    """Send a payment reminder email before a lesson."""
+    body = render_template(
+        "payment_reminder_mail.html",
+        {
+            "name": name,
+            "tutor_name": tutor_name,
+            "lesson_date": lesson_date,
+            "lesson_time": lesson_time,
+            "amount": amount,
+            "payment_link": payment_link,
+            "app_name": "KorINF",
+        },
+    )
+    send_email(recipient_email, f"💳 Opłać lekcję – {lesson_date} – KorINF", body)
