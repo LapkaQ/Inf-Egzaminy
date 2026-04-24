@@ -296,7 +296,7 @@ export const AdminDashboard = () => {
       } else {
         result = await sendEmailToAll(emailSubject, emailMessage, emailRoleFilter || undefined);
       }
-      setSuccessMsg(`✅ ${result.message}`);
+      setSuccessMsg(result.message);
       setEmailSubject('');
       setEmailMessage('');
       setEmailUserId('');
@@ -351,7 +351,7 @@ export const AdminDashboard = () => {
     setErr('');
     try {
       const result = await replyToMessage(replyModal.id, replyText);
-      setSuccessMsg(`✅ ${result.message}`);
+      setSuccessMsg(result.message);
       setReplyModal(null);
       setReplyText('');
       loadMessages();
@@ -413,8 +413,8 @@ export const AdminDashboard = () => {
           {tabBtn('overview', 'Przegląd')}
           {tabBtn('bookings', 'Rezerwacje i linki')}
           {tabBtn('users', 'Użytkownicy')}
-          {tabBtn('messages', 'Wiadomości', '💬')}
-          {tabBtn('email', 'Maile', '📧')}
+          {tabBtn('messages', 'Wiadomości', '')}
+          {tabBtn('email', 'Maile', '')}
         </div>
 
         {loading ? (
@@ -772,14 +772,14 @@ export const AdminDashboard = () => {
                             setReplyText(m.admin_reply || '');
                           }}
                         >
-                          {m.status === 'replied' ? '✏️ Edytuj odpowiedź' : '💬 Odpowiedz'}
+                          {m.status === 'replied' ? 'Edytuj odpowiedź' : 'Odpowiedz'}
                         </button>
                       </div>
                     </div>
                   ))}
                   {messages.length === 0 && (
                     <div className="bg-surface border border-line rounded-2xl p-12 text-center">
-                      <div className="text-3xl mb-3">📭</div>
+                      <div className="text-3xl mb-3"></div>
                       <div className="text-subtle text-sm">Brak wiadomości z podanym filtrem.</div>
                     </div>
                   )}
@@ -797,9 +797,9 @@ export const AdminDashboard = () => {
 
                   <div className="flex flex-wrap gap-2 mb-6">
                     {[
-                      ['single', '👤 Pojedynczy użytkownik'],
-                      ['selected', '☑️ Zaznaczeni użytkownicy'],
-                      ['all', '📢 Wszyscy użytkownicy'],
+                      ['single', 'Pojedynczy użytkownik'],
+                      ['selected', 'Zaznaczeni użytkownicy'],
+                      ['all', 'Wszyscy użytkownicy'],
                     ].map(([mode, label]) => (
                       <button
                         key={mode}
@@ -956,7 +956,7 @@ export const AdminDashboard = () => {
                             Wysyłanie...
                           </span>
                         ) : (
-                          `📧 Wyślij ${
+                          `Wyślij ${
                             emailMode === 'single'
                               ? 'do użytkownika'
                               : emailMode === 'selected'
@@ -1169,7 +1169,7 @@ export const AdminDashboard = () => {
                       <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
                       Wysyłanie...
                     </span>
-                  ) : '📧 Wyślij odpowiedź emailem'}
+                  ) : 'Wyślij odpowiedź emailem'}
                 </button>
               </div>
             </form>

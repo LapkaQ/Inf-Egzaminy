@@ -68,7 +68,7 @@ export const Register = () => {
           </div>
 
           <div className="w-20 h-20 rounded-full bg-accent/15 border border-accent/30 flex items-center justify-center mx-auto text-4xl mb-6 animate-scale-in [animation-delay:0.1s]">
-            📧
+
           </div>
 
           <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white">
@@ -85,10 +85,9 @@ export const Register = () => {
               Nie widzisz maila?
             </p>
             <ul className="text-[0.78rem] text-subtle space-y-1.5 list-none p-0 m-0">
-              <li>📥 Sprawdź folder spam / oferty</li>
-              <li>⏱️ Poczekaj 1–2 minuty</li>
+              <li>Sprawdź folder spam / oferty</li>
+              <li>Poczekaj 1–2 minuty</li>
               <li>
-                🔄{' '}
                 <button
                   type="button"
                   onClick={handleResend}
@@ -197,8 +196,8 @@ export const Register = () => {
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
-              <option value="student">👤 Uczniem — szukam korepetytora</option>
-              <option value="tutor">🎓 Korepetytorem — chcę uczyć</option>
+              <option value="student">Uczniem — szukam korepetytora</option>
+              <option value="tutor">Korepetytorem — chcę uczyć</option>
             </select>
           </div>
           <button

@@ -203,7 +203,7 @@ export const PaymentPage = () => {
                 <span className="font-semibold capitalize">{lessonDate}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-subtle">🕐 Godziny</span>
+                <span className="text-subtle">Godziny</span>
                 <span className="font-semibold">{startTime} – {endTime}</span>
               </div>
               <div className="flex justify-between text-sm">
@@ -211,7 +211,7 @@ export const PaymentPage = () => {
                 <span className="font-semibold">{duration} min</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-subtle">👨‍🏫 Korepetytor</span>
+                <span className="text-subtle">Korepetytor</span>
                 <span className="font-semibold">T{booking.tutor_id}</span>
               </div>
             </div>
@@ -247,7 +247,7 @@ export const PaymentPage = () => {
             {/* Error */}
             {payError && (
               <div className="p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-sm flex items-center gap-2">
-                <span>❌</span> {payError}
+                {payError}
               </div>
             )}
 

@@ -87,7 +87,7 @@ export const Login = () => {
                   disabled={resending || !email}
                   className="text-accent text-xs font-semibold hover:text-violet-300 transition-colors cursor-pointer bg-transparent border-0 font-sans p-0"
                 >
-                  {resending ? 'Wysyłanie...' : '🔄 Wyślij email weryfikacyjny ponownie'}
+                  {resending ? 'Wysyłanie...' : 'Wyślij email weryfikacyjny ponownie'}
                 </button>
                 {resendMsg && (
                   <p className="mt-2 text-xs text-green-400">{resendMsg}</p>
@@ -154,7 +154,7 @@ export const Login = () => {
         </p>
 
         <div className="mt-8 p-4 bg-surface-2 rounded-xl border border-line text-center text-[0.75rem] text-faint">
-          🔒 Twoje dane są szyfrowane i bezpieczne
+          Twoje dane są szyfrowane i bezpieczne
         </div>
       </div>
     </div>

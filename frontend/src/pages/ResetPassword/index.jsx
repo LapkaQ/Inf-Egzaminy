@@ -51,7 +51,7 @@ const ResetPassword = () => {
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_60%_50%_at_20%_40%,rgba(124,58,237,0.08)_0%,transparent_60%),radial-gradient(ellipse_50%_40%_at_80%_60%,rgba(59,130,246,0.06)_0%,transparent_60%)] pointer-events-none" />
         <div className="relative z-10 w-full max-w-[440px] bg-surface border border-line rounded-2xl p-11 text-center animate-scale-in">
           <div className="w-20 h-20 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto text-4xl mb-6">
-            ❌
+
           </div>
           <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white">
             Nieprawidłowy link
@@ -88,7 +88,7 @@ const ResetPassword = () => {
         {success ? (
           <>
             <div className="w-20 h-20 rounded-full bg-green-500/15 border border-green-500/30 flex items-center justify-center mx-auto text-4xl mb-6 animate-scale-in">
-              ✅
+
             </div>
             <h1 className="text-[1.5rem] font-black tracking-[-0.04em] mb-3 text-white text-center">
               Hasło zmienione!
@@ -161,7 +161,7 @@ const ResetPassword = () => {
         )}
 
         <div className="mt-8 p-4 bg-surface-2 rounded-xl border border-line text-center text-[0.75rem] text-faint">
-          🔒 Twoje nowe hasło jest szyfrowane i bezpieczne
+          Twoje nowe hasło jest szyfrowane i bezpieczne
         </div>
       </div>
     </div>

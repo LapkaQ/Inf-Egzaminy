@@ -103,7 +103,7 @@ export const Contact = () => {
 
               {success && (
                 <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/25 text-green-300 text-sm animate-fade-up">
-                  ✅ {success}
+                  {success}
                 </div>
               )}
               {error && (
@@ -210,7 +210,7 @@ export const Contact = () => {
             <div className="reveal delay-1">
               <div className="bg-surface border border-line rounded-2xl p-6">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-lg mb-4">
-                  📧
+
                 </div>
                 <div className="font-bold text-sm mb-1">E-mail</div>
                 <p className="text-subtle text-sm">kontakt@inf-egzaminy.pl</p>
@@ -220,7 +220,7 @@ export const Contact = () => {
             <div className="reveal delay-2">
               <div className="bg-surface border border-line rounded-2xl p-6">
                 <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-lg mb-4">
-                  ⏱️
+
                 </div>
                 <div className="font-bold text-sm mb-1">Czas odpowiedzi</div>
                 <p className="text-subtle text-sm">
