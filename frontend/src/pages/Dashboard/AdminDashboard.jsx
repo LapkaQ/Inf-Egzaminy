@@ -413,8 +413,8 @@ export const AdminDashboard = () => {
           {tabBtn('overview', 'Przegląd')}
           {tabBtn('bookings', 'Rezerwacje i linki')}
           {tabBtn('users', 'Użytkownicy')}
-          {tabBtn('messages', 'Wiadomości', '💬')}
-          {tabBtn('email', 'Maile', '📧')}
+          {tabBtn('messages', 'Wiadomości')}
+          {tabBtn('email', 'Maile')}
         </div>
 
         {loading ? (
