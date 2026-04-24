@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { APP_NAME } from '../../config'
 
 export const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth()
@@ -38,9 +39,9 @@ export const Navbar = () => {
             className="flex items-center gap-2.5 font-extrabold text-[1.05rem] tracking-tight text-white"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-              K
+              {APP_NAME.charAt(0)}
             </div>
-            KorINF
+            {APP_NAME}
           </Link>
         </div>
 

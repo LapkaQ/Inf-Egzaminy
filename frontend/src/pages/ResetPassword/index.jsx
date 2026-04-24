@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../services/auth'
+import { APP_NAME } from '../../config'
 
 const INPUT =
   'w-full bg-surface-2 border border-line rounded-xl px-4 py-3 text-sm text-white placeholder:text-faint outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12)] font-sans'
@@ -77,10 +78,10 @@ const ResetPassword = () => {
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-8">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-            K
+            {APP_NAME.charAt(0)}
           </div>
           <span className="font-extrabold text-white tracking-tight">
-            KorINF
+            {APP_NAME}
           </span>
         </div>
 

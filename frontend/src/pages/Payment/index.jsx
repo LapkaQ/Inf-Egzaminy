@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getMyBookings } from '../../services/tutors';
 import { emulatePayment, getPaymentStatus, initiatePayment } from '../../services/payments';
+import { APP_NAME } from '../../config';
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2';
 
@@ -185,10 +186,10 @@ export const PaymentPage = () => {
           <div className={`${GRAD} px-6 py-5`}>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-lg font-bold">
-                K
+                {APP_NAME.charAt(0)}
               </div>
               <div>
-                <div className="text-sm font-bold text-white/90">KorINF</div>
+                <div className="text-sm font-bold text-white/90">{APP_NAME}</div>
                 <div className="text-xs text-white/60">Platforma korepetycji</div>
               </div>
             </div>

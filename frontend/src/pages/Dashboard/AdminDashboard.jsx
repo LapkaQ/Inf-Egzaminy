@@ -19,6 +19,7 @@ import {
   replyToMessage,
 } from '../../services/admin';
 import { cancelBooking, getTutorById } from '../../services/tutors';
+import { APP_NAME } from '../../config';
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2';
 const INPUT =
@@ -923,7 +924,7 @@ export const AdminDashboard = () => {
                       <label className="text-xs text-subtle block mb-1.5">Temat wiadomości</label>
                       <input
                         className={INPUT}
-                        placeholder="np. Ważna informacja od zespołu KorINF"
+                        placeholder={`np. Ważna informacja od zespołu ${APP_NAME}`}
                         value={emailSubject}
                         onChange={(e) => setEmailSubject(e.target.value)}
                         required

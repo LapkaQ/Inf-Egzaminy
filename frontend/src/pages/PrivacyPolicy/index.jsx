@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { APP_NAME } from '../../config'
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2'
 const GRAD_TEXT = `${GRAD} bg-clip-text text-transparent`
@@ -245,7 +246,7 @@ export const PrivacyPolicy = () => {
       <footer className="border-t border-line py-12">
         <div className="max-w-4xl mx-auto px-8">
           <div className="flex items-center justify-between flex-wrap gap-3 text-[0.8rem] text-faint">
-            <span>© 2026 KorINF. Wszelkie prawa zastrzeżone.</span>
+            <span>© 2026 {APP_NAME}. Wszelkie prawa zastrzeżone.</span>
             <span>by lapkaq</span>
           </div>
         </div>

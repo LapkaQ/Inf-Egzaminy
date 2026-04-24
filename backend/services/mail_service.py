@@ -17,20 +17,35 @@ def render_template(template_name: str, parameters: dict) -> str:
 
 def send_email(recipient_email: str, subject: str, body: str):
     """Send an email using SMTP. Designed to be called as a background task."""
+    # Resolve SMTP credentials: prefer SMTP_USER, fall back to GMAIL_USER
+    smtp_user = settings.SMTP_USER or settings.GMAIL_USER
+    smtp_password = settings.SMTP_PASSWORD or settings.GMAIL_PASSWORD
+
+    if not smtp_user or not smtp_password:
+        logger.error("SMTP credentials not configured (SMTP_USER/SMTP_PASSWORD or GMAIL_USER/GMAIL_PASSWORD)")
+        return
+
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"KorINF <{settings.GMAIL_USER}>"
+        msg["From"] = f"{settings.APP_NAME} <{smtp_user}>"
         msg["To"] = recipient_email
 
         body_part = MIMEText(body, "html", "utf-8")
         msg.attach(body_part)
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
-            smtp_server.login(settings.GMAIL_USER, settings.GMAIL_PASSWORD)
-            smtp_server.sendmail(
-                settings.GMAIL_USER, [recipient_email], msg.as_string()
-            )
+        if settings.SMTP_USE_SSL:
+            # Implicit SSL (port 465)
+            server = smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT)
+        else:
+            # Plain or STARTTLS (port 587 / 25)
+            server = smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT)
+            if settings.SMTP_USE_TLS:
+                server.starttls()
+
+        with server:
+            server.login(smtp_user, smtp_password)
+            server.sendmail(smtp_user, [recipient_email], msg.as_string())
 
         logger.info(f"Email sent to {recipient_email}: {subject}")
     except Exception as e:
@@ -44,10 +59,10 @@ def send_registration_email(recipient_email: str, name: str, confirmation_link: 
         {
             "name": name,
             "confirmation_link": confirmation_link,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
-    send_email(recipient_email, "Potwierdź rejestrację w KorINF", body)
+    send_email(recipient_email, f"Potwierdź rejestrację w {settings.APP_NAME}", body)
 
 
 def send_forgot_password_email(recipient_email: str, name: str, reset_link: str):
@@ -57,10 +72,10 @@ def send_forgot_password_email(recipient_email: str, name: str, reset_link: str)
         {
             "name": name,
             "reset_link": reset_link,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
-    send_email(recipient_email, "Resetowanie hasła – KorINF", body)
+    send_email(recipient_email, f"Resetowanie hasła – {settings.APP_NAME}", body)
 
 
 def send_password_changed_email(recipient_email: str, name: str):
@@ -69,11 +84,11 @@ def send_password_changed_email(recipient_email: str, name: str):
         "password_changed_mail.html",
         {
             "name": name,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
             "login_link": f"{settings.FRONTEND_APP_URL}/login",
         },
     )
-    send_email(recipient_email, "Hasło zostało zmienione – KorINF", body)
+    send_email(recipient_email, f"Hasło zostało zmienione – {settings.APP_NAME}", body)
 
 
 def send_custom_email(recipient_email: str, subject: str, message: str, name: str = ""):
@@ -83,7 +98,7 @@ def send_custom_email(recipient_email: str, subject: str, message: str, name: st
         {
             "name": name,
             "message": message,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
     send_email(recipient_email, subject, body)
@@ -95,11 +110,11 @@ def send_welcome_verified_email(recipient_email: str, name: str):
         "welcome_mail.html",
         {
             "name": name,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
             "login_link": f"{settings.FRONTEND_APP_URL}/login",
         },
     )
-    send_email(recipient_email, "Witaj w KorINF! 🎉", body)
+    send_email(recipient_email, f"Witaj w {settings.APP_NAME}! 🎉", body)
 
 
 def send_payment_reminder_email(
@@ -121,7 +136,7 @@ def send_payment_reminder_email(
             "lesson_time": lesson_time,
             "amount": amount,
             "payment_link": payment_link,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
-    send_email(recipient_email, f"💳 Opłać lekcję – {lesson_date} – KorINF", body)
+    send_email(recipient_email, f"💳 Opłać lekcję – {lesson_date} – {settings.APP_NAME}", body)

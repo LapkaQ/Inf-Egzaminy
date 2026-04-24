@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../services/api'
+import { APP_NAME } from '../../config'
 
 /* Reusable Tailwind strings */
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2'
@@ -268,7 +269,7 @@ export const Home = () => {
       {/* ── FEATURES ────────────────────────────────────────────────────── */}
       <section className="py-24 max-w-6xl mx-auto px-8">
         <div className="reveal mb-14 max-w-[520px]">
-          <div className={`${LABEL} mb-3`}>Dlaczego KorINF?</div>
+          <div className={`${LABEL} mb-3`}>Dlaczego {APP_NAME}?</div>
           <h2 className="text-[clamp(1.8rem,4vw,2.6rem)] font-black tracking-[-0.04em] leading-[1.15]">
             Wszystko czego potrzebujesz do zdania egzaminu
           </h2>
@@ -402,9 +403,9 @@ export const Home = () => {
             <div>
               <div className="flex items-center gap-2.5 font-extrabold text-white mb-4">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-                  K
+                  {APP_NAME.charAt(0)}
                 </div>
-                KorINF
+                {APP_NAME}
               </div>
               <p className="text-sm text-subtle leading-[1.7] max-w-[280px]">
                 Platforma korepetycji skupiona wyłącznie na egzaminach
@@ -455,7 +456,7 @@ export const Home = () => {
             ))}
           </div>
           <div className="flex items-center justify-between flex-wrap gap-3 pt-8 border-t border-line text-[0.8rem] text-faint">
-            <span>© 2026 KorINF. Wszelkie prawa zastrzeżone.</span>
+            <span>© 2026 {APP_NAME}. Wszelkie prawa zastrzeżone.</span>
             <span>by lapkaq</span>
           </div>
         </div>

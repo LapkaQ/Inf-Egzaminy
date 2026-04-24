@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { authService } from '../../services/auth'
+import { APP_NAME } from '../../config'
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams()
@@ -67,10 +68,10 @@ const VerifyEmail = () => {
         {/* Logo */}
         <div className="flex items-center justify-center gap-2.5 mb-10">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-            K
+            {APP_NAME.charAt(0)}
           </div>
           <span className="font-extrabold text-white tracking-tight">
-            KorINF
+            {APP_NAME}
           </span>
         </div>
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { authService } from '../../services/auth'
 import { useAuth } from '../../context/AuthContext'
+import { APP_NAME } from '../../config'
 
 const INPUT =
   'w-full bg-surface-2 border border-line rounded-xl px-4 py-3 text-sm text-white placeholder:text-faint outline-none transition-all duration-200 focus:border-accent/50 focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12)] font-sans'
@@ -59,10 +60,10 @@ export const Register = () => {
           {/* Logo */}
           <div className="flex items-center justify-center gap-2.5 mb-10">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-              K
+              {APP_NAME.charAt(0)}
             </div>
             <span className="font-extrabold text-white tracking-tight">
-              KorINF
+              {APP_NAME}
             </span>
           </div>
 
@@ -124,10 +125,10 @@ export const Register = () => {
         {/* Logo */}
         <div className="flex items-center gap-2.5 mb-8">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-sm font-black">
-            K
+            {APP_NAME.charAt(0)}
           </div>
           <span className="font-extrabold text-white tracking-tight">
-            KorINF
+            {APP_NAME}
           </span>
         </div>
 
@@ -221,19 +222,19 @@ export const Register = () => {
 
         <p className="mt-6 text-[0.73rem] text-faint text-center leading-[1.6]">
           Tworząc konto zgadzasz się z naszym{' '}
-          <a
-            href="#"
+          <Link
+            to="/terms"
             className="text-subtle hover:text-white transition-colors"
           >
             Regulaminem
-          </a>{' '}
+          </Link>{' '}
           i{' '}
-          <a
-            href="#"
+          <Link
+            to="/privacy-policy"
             className="text-subtle hover:text-white transition-colors"
           >
             Polityką prywatności
-          </a>
+          </Link>
           .
         </p>
       </div>

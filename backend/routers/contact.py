@@ -16,6 +16,7 @@ from schemas.contact import (
     ContactMessageReplyResponse,
 )
 from services.mail_service import send_email, render_template
+from core.config import settings
 
 router = APIRouter(prefix="/contact", tags=["Contact"])
 
@@ -46,13 +47,13 @@ def submit_contact_message(
         {
             "name": body.name,
             "subject": body.subject,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
     background_tasks.add_task(
         send_email,
         body.email,
-        "Otrzymaliśmy Twoją wiadomość – KorINF",
+        f"Otrzymaliśmy Twoją wiadomość – {settings.APP_NAME}",
         confirmation_body,
     )
 
@@ -135,13 +136,13 @@ def admin_reply_to_message(
             "original_subject": msg.subject,
             "original_message": msg.message,
             "reply": body.reply_message,
-            "app_name": "KorINF",
+            "app_name": settings.APP_NAME,
         },
     )
     background_tasks.add_task(
         send_email,
         msg.email,
-        f"Re: {msg.subject} – KorINF",
+        f"Re: {msg.subject} – {settings.APP_NAME}",
         reply_body,
     )
 
