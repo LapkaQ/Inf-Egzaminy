@@ -1,10 +1,21 @@
 version: '3.8'
 
 services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    volumes:
+      - mysql_data:/var/lib/mysql
+
   backend:
     build: ./backend
     restart: always
     env_file: ./.env
+    depends_on:
+      - db
     ports:
       - "8000:8000"
 
@@ -15,3 +26,6 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+volumes:
+  mysql_data:
