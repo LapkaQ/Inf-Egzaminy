@@ -1,26 +1,31 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from routers import auth, tutors, availability, bookings, sessions, stats, schedule, admin, meetings, contact, payments
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="KorkiINF API", version="1.0.0")
+app = FastAPI(title="Inf-Egzaminy.pl API", version="1.0.0")
 
 # CORS must be added BEFORE routers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], 
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
-app.include_router(tutors.router)
-app.include_router(availability.router)
-app.include_router(bookings.router)
-app.include_router(sessions.router)
-app.include_router(stats.router)
-app.include_router(schedule.router)
-app.include_router(admin.router)
-app.include_router(meetings.router)
-app.include_router(contact.router)
-app.include_router(payments.router)
+# Global /api prefix for all routers
+api_router = APIRouter(prefix="/api")
+api_router.include_router(auth.router)
+api_router.include_router(tutors.router)
+api_router.include_router(availability.router)
+api_router.include_router(bookings.router)
+api_router.include_router(sessions.router)
+api_router.include_router(stats.router)
+api_router.include_router(schedule.router)
+api_router.include_router(admin.router)
+api_router.include_router(meetings.router)
+api_router.include_router(contact.router)
+api_router.include_router(payments.router)
+
+app.include_router(api_router)
+

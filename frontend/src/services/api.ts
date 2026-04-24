@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+const API_BASE = `${API_URL}/api`;
 
 export const api = {
   get: (url: string) => request(url, { method: 'GET' }),
@@ -43,7 +44,7 @@ async function request(endpoint: string, options: RequestInit) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, { ...options, headers });
+  const response = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
 
   if (response.status === 204) return null; // No Content
 
