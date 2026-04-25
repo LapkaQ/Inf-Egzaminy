@@ -144,23 +144,35 @@ def _regenerate_slots(db: Session, profile: TutorProfile):
         dow = current_date.weekday()  # 0=Monday
         for pattern in patterns:
             if pattern.day_of_week == dow:
-                slot_start = datetime.combine(current_date, pattern.start_time)
-                slot_end = datetime.combine(current_date, pattern.end_time)
+                # Split the pattern range into individual 1-hour slots
+                pattern_start = datetime.combine(current_date, pattern.start_time)
+                pattern_end = datetime.combine(current_date, pattern.end_time)
 
-                # Skip if in the past
-                if slot_start <= now:
-                    continue
+                slot_start = pattern_start
+                while slot_start < pattern_end:
+                    slot_end = slot_start + timedelta(hours=1)
+                    # Don't exceed the pattern end time
+                    if slot_end > pattern_end:
+                        slot_end = pattern_end
 
-                # Skip if already exists
-                if (slot_start, slot_end) in existing:
-                    continue
+                    # Skip if in the past
+                    if slot_start <= now:
+                        slot_start = slot_end
+                        continue
 
-                db.add(AvailabilitySlot(
-                    tutor_id=profile.id,
-                    start_time=slot_start,
-                    end_time=slot_end,
-                ))
-                existing.add((slot_start, slot_end))
+                    # Skip if already exists
+                    if (slot_start, slot_end) in existing:
+                        slot_start = slot_end
+                        continue
+
+                    db.add(AvailabilitySlot(
+                        tutor_id=profile.id,
+                        start_time=slot_start,
+                        end_time=slot_end,
+                    ))
+                    existing.add((slot_start, slot_end))
+
+                    slot_start = slot_end
 
         current_date += timedelta(days=1)
 
