@@ -355,6 +355,8 @@ export const TutorDashboard = () => {
   const upcoming  = bookings.filter(b => b.status !== 'cancelled' && b.status !== 'completed' && new Date(b.start_time) > new Date());
   const futureSlots = slots.filter(s => new Date(s.start_time) > new Date());
   const TABS = ['Przegląd', 'Harmonogram', 'Terminy', 'Profil'];
+  const REQUIRES_PROFILE = new Set(['Harmonogram', 'Terminy']);
+  const isTabLocked = (t) => REQUIRES_PROFILE.has(t) && !profile;
 
   return (
     <div className="min-h-screen bg-page text-white pt-[90px]">
@@ -372,14 +374,46 @@ export const TutorDashboard = () => {
           </p>
         </div>
 
+        {/* Profile required banner */}
+        {!profile && !loading && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl flex items-center gap-3">
+            <span className="text-amber-400 text-lg shrink-0">⚠</span>
+            <div className="text-sm">
+              <span className="text-amber-300 font-semibold">Uzupełnij profil,</span>{' '}
+              <span className="text-subtle">aby odblokować harmonogram i zarządzanie terminami.</span>
+            </div>
+            <button
+              onClick={() => setTab('Profil')}
+              className={`ml-auto shrink-0 px-4 py-1.5 rounded-lg ${GRAD} text-white text-xs font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 transition-all duration-200`}
+            >
+              Uzupełnij profil →
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="inline-flex bg-surface border border-line rounded-xl p-1 gap-1 mb-8">
-          {TABS.map(t => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`px-5 py-2 rounded-lg text-sm font-sans cursor-pointer transition-all duration-200 ${tab === t ? 'bg-surface-3 text-white font-semibold' : 'bg-transparent text-subtle hover:text-white font-medium'}`}>
-              {t}
-            </button>
-          ))}
+          {TABS.map(t => {
+            const locked = isTabLocked(t);
+            return (
+              <button
+                key={t}
+                onClick={() => !locked && setTab(t)}
+                disabled={locked}
+                title={locked ? 'Najpierw uzupełnij profil korepetytora' : undefined}
+                className={`px-5 py-2 rounded-lg text-sm font-sans transition-all duration-200 flex items-center gap-1.5 ${
+                  locked
+                    ? 'opacity-40 cursor-not-allowed bg-transparent text-faint font-medium'
+                    : tab === t
+                      ? 'bg-surface-3 text-white font-semibold cursor-pointer'
+                      : 'bg-transparent text-subtle hover:text-white font-medium cursor-pointer'
+                }`}
+              >
+                {locked && <span className="text-[0.7rem]">🔒</span>}
+                {t}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── PRZEGLĄD ── */}
@@ -411,8 +445,8 @@ export const TutorDashboard = () => {
                   ) : upcoming.length === 0 ? (
                     <div className="text-center py-10 text-subtle text-sm">
                       <div className="text-3xl mb-3"></div>
-                      <p>Brak nadchodzących lekcji. Ustaw harmonogram, żeby uczniowie mogli rezerwować terminy.</p>
-                      <button onClick={() => setTab('Harmonogram')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">Ustaw harmonogram →</button>
+                      <p>Brak nadchodzących lekcji. {profile ? 'Ustaw harmonogram' : 'Uzupełnij profil'}, żeby uczniowie mogli rezerwować terminy.</p>
+                      <button onClick={() => setTab(profile ? 'Harmonogram' : 'Profil')} className="mt-3 text-accent cursor-pointer hover:underline bg-transparent border-0 font-sans">{profile ? 'Ustaw harmonogram →' : 'Uzupełnij profil →'}</button>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3">
@@ -482,11 +516,29 @@ export const TutorDashboard = () => {
                 <div className="bg-surface border border-line rounded-2xl p-6">
                   <h3 className="font-bold text-sm mb-4">Szybkie akcje</h3>
                   <div className="flex flex-col gap-2.5">
-                    <button onClick={() => setTab('Harmonogram')} className={`py-2.5 rounded-xl ${GRAD} text-white text-sm font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 transition-all duration-200`}>
-                      Ustaw harmonogram →
+                    <button
+                      onClick={() => !isTabLocked('Harmonogram') && setTab('Harmonogram')}
+                      disabled={isTabLocked('Harmonogram')}
+                      title={isTabLocked('Harmonogram') ? 'Najpierw uzupełnij profil' : undefined}
+                      className={`py-2.5 rounded-xl text-sm font-semibold border-0 font-sans transition-all duration-200 ${
+                        isTabLocked('Harmonogram')
+                          ? 'bg-surface-2 text-faint cursor-not-allowed opacity-50'
+                          : `${GRAD} text-white cursor-pointer hover:-translate-y-0.5`
+                      }`}
+                    >
+                      {isTabLocked('Harmonogram') ? '🔒 Ustaw harmonogram' : 'Ustaw harmonogram →'}
                     </button>
-                    <button onClick={() => setTab('Terminy')} className="py-2.5 rounded-xl border border-line-hi text-subtle text-sm font-medium cursor-pointer bg-transparent font-sans hover:text-white hover:border-white/20 transition-all duration-200">
-                      Zobacz wygenerowane terminy
+                    <button
+                      onClick={() => !isTabLocked('Terminy') && setTab('Terminy')}
+                      disabled={isTabLocked('Terminy')}
+                      title={isTabLocked('Terminy') ? 'Najpierw uzupełnij profil' : undefined}
+                      className={`py-2.5 rounded-xl border text-sm font-medium font-sans transition-all duration-200 ${
+                        isTabLocked('Terminy')
+                          ? 'border-line bg-transparent text-faint cursor-not-allowed opacity-50'
+                          : 'border-line-hi text-subtle cursor-pointer bg-transparent hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      {isTabLocked('Terminy') ? '🔒 Wygenerowane terminy' : 'Zobacz wygenerowane terminy'}
                     </button>
                     <button onClick={() => setTab('Profil')} className="py-2.5 rounded-xl border border-line-hi text-subtle text-sm font-medium cursor-pointer bg-transparent font-sans hover:text-white hover:border-white/20 transition-all duration-200">
                       Edytuj profil
@@ -500,18 +552,39 @@ export const TutorDashboard = () => {
 
         {/* ── HARMONOGRAM (New Weekly Schedule Builder) ── */}
         {tab === 'Harmonogram' && (
-          <WeeklyScheduleBuilder
-            schedule={schedule}
-            setSchedule={setSchedule}
-            onSave={handleSaveSchedule}
-            saving={schedSaving}
-            saveMsg={schedMsg}
-            saveError={schedError}
-          />
+          !profile ? (
+            <div className="bg-surface border border-line rounded-2xl p-10 text-center">
+              <div className="text-3xl mb-3">🔒</div>
+              <h2 className="font-bold text-[1.05rem] mb-2">Harmonogram zablokowany</h2>
+              <p className="text-subtle text-sm mb-5">Aby ustawić harmonogram dostępności, najpierw uzupełnij swój profil korepetytora.</p>
+              <button onClick={() => setTab('Profil')} className={`px-6 py-3 rounded-xl ${GRAD} text-white text-sm font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.35)] transition-all duration-200`}>
+                Uzupełnij profil →
+              </button>
+            </div>
+          ) : (
+            <WeeklyScheduleBuilder
+              schedule={schedule}
+              setSchedule={setSchedule}
+              onSave={handleSaveSchedule}
+              saving={schedSaving}
+              saveMsg={schedMsg}
+              saveError={schedError}
+            />
+          )
         )}
 
         {/* ── TERMINY (Generated Slots) ── */}
-        {tab === 'Terminy' && (
+        {tab === 'Terminy' && !profile && (
+          <div className="bg-surface border border-line rounded-2xl p-10 text-center">
+            <div className="text-3xl mb-3">🔒</div>
+            <h2 className="font-bold text-[1.05rem] mb-2">Terminy zablokowane</h2>
+            <p className="text-subtle text-sm mb-5">Aby przeglądać wygenerowane terminy, najpierw uzupełnij swój profil korepetytora.</p>
+            <button onClick={() => setTab('Profil')} className={`px-6 py-3 rounded-xl ${GRAD} text-white text-sm font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(124,58,237,0.35)] transition-all duration-200`}>
+              Uzupełnij profil →
+            </button>
+          </div>
+        )}
+        {tab === 'Terminy' && profile && (
           <div>
             <div className="flex items-center justify-between mb-5">
               <div>
