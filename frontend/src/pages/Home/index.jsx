@@ -416,26 +416,26 @@ export const Home = () => {
               {
                 title: 'Platforma',
                 links: [
-                  { label: 'Korepetytorzy', to: '/tutors' },
-                  { label: 'Zarejestruj się', to: '/register' },
-                  { label: 'Zaloguj się', to: '/login' },
+                  { label: 'Korepetytorzy', to: '/tutors', disabled: false },
+                  { label: 'Zarejestruj się', to: '/register', disabled: false },
+                  { label: 'Zaloguj się', to: '/login', disabled: false },
                 ],
               },
               {
                 title: 'Egzaminy',
                 links: [
-                  { label: 'INF.03', to: '#' },
-                  { label: 'INF.04', to: '#' },
-                  { label: 'Materiały', to: '#' },
+                  { label: 'INF.03', to: '#' , disabled: true },
+                  { label: 'INF.04', to: '#' , disabled: true},
+                  { label: 'Materiały', to: '#' , disabled: true},
                 ],
               },
               {
                 title: 'Kontakt',
                 links: [
-                  { label: 'Formularz kontaktowy', to: '/contact' },
-                  { label: 'kontakt@inf-egzaminy.pl', to: '#' },
-                  { label: 'Regulamin', to: '/terms' },
-                  { label: 'Polityka prywatności', to: '/privacy-policy' },
+                  { label: 'Formularz kontaktowy', to: '/contact', disabled: false },
+                  { label: 'kontakt@inf-egzaminy.pl', to: '#', disabled: false },
+                  { label: 'Regulamin', to: '/terms', disabled: false },
+                  { label: 'Polityka prywatności', to: '/privacy-policy', disabled: false },
                 ],
               },
             ].map((col) => (
@@ -446,8 +446,13 @@ export const Home = () => {
                 {col.links.map((l) => (
                   <Link
                     key={l.label}
+                    className={`block text-[0.85rem] text-subtle hover:text-white transition-colors duration-200 mb-2.5 ${l.disabled ? 'opacity-50 cursor-not-allowed ' : ''}  `}
                     to={l.to}
-                    className="block text-[0.85rem] text-subtle hover:text-white transition-colors duration-200 mb-2.5"
+                    onClick={(e) => {
+                      if (l.disabled) {
+                        e.preventDefault();
+                      }
+                    }}
                   >
                     {l.label}
                   </Link>
