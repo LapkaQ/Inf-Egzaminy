@@ -17,7 +17,7 @@ router = APIRouter(prefix="/meetings", tags=["Meetings (Zoom)"])
 
 
 def _require_zoom():
-    """Sprawdza czy Zoom jest skonfigurowany – jeśli nie, 503."""
+    """Sprawdza czy Zoom jest skonfigurowany – jeśli nie, wyswietl blad 503."""
     if not (settings.ZOOM_ACCOUNT_ID and settings.ZOOM_CLIENT_ID and settings.ZOOM_CLIENT_SECRET):
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
