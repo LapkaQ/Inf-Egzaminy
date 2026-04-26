@@ -161,7 +161,6 @@ export const StudentDashboard = () => {
               {upcoming.map(b => {
                 const { date, time } = formatDt(b.start_time);
                 const { time: endTime } = formatDt(b.end_time);
-                const meetUrl = b.session?.meeting_url;
                 const isAwaitingPayment = b.status === 'awaiting_payment';
 
                 return (
@@ -208,28 +207,68 @@ export const StudentDashboard = () => {
                       </div>
                     </div>
                     {/* Meeting link - only for confirmed (paid) bookings */}
-                    {meetUrl && !isAwaitingPayment && (() => {
+                    {!isAwaitingPayment && (() => {
                       const startsIn = new Date(b.start_time) - new Date();
                       const minutesLeft = Math.ceil(startsIn / 60000);
-                      const isLinkActive = minutesLeft <= 10;
-                      const isZoomLink = meetUrl.includes('zoom.us');
-                      return (
-                        <div className="px-4 pb-4 flex flex-col gap-2">
-                          {isLinkActive ? (
+                      const isInWindow = minutesLeft <= 10;
+                      const meetUrl = b.session?.meeting_url;
+
+                      if (startsIn <= 0) {
+                        // Lekcja już się zaczęła lub minęła
+                        return meetUrl ? (
+                          <div className="px-4 pb-4">
                             <a
                               href={meetUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200 no-underline`}
                             >
-                              {isZoomLink ? 'Dołącz do spotkania Zoom' : 'Dołącz do spotkania'}
+                              Dołącz do spotkania Zoom
                             </a>
-                          ) : (
-                            <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-2 border border-line text-subtle text-[0.78rem] font-medium">
-                              Link dostępny za {minutesLeft - 10} min
-                            </div>
-                          )}
+                          </div>
+                        ) : null;
+                      }
 
+                      if (!isInWindow) {
+                        // Przed oknem 10 minut — link jeszcze nie zostanie wygenerowany
+                        const minsToWindow = minutesLeft - 10;
+                        return (
+                          <div className="px-4 pb-4">
+                            <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-2 border border-line text-subtle text-[0.78rem] font-medium">
+                              Link Zoom dostępny za {minsToWindow > 60
+                                ? `${Math.floor(minsToWindow / 60)} h ${minsToWindow % 60} min`
+                                : `${minsToWindow} min`}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Jesteśmy w oknie 10 minut
+                      if (meetUrl) {
+                        return (
+                          <div className="px-4 pb-4">
+                            <a
+                              href={meetUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200 no-underline`}
+                            >
+                              Dołącz do spotkania Zoom
+                            </a>
+                          </div>
+                        );
+                      }
+
+                      // W oknie, ale link jeszcze nie wygenerowany — możliwość ręcznego generowania
+                      return (
+                        <div className="px-4 pb-4">
+                          <button
+                            onClick={() => handleRegenerate(b.id)}
+                            disabled={regenerating === b.id}
+                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-lg ${GRAD} text-white text-[0.78rem] font-semibold hover:-translate-y-0.5 transition-all duration-200 cursor-pointer border-0 font-sans disabled:opacity-60`}
+                          >
+                            {regenerating === b.id ? 'Generowanie…' : 'Wygeneruj link Zoom'}
+                          </button>
                         </div>
                       );
                     })()}

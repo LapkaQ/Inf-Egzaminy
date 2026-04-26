@@ -17,6 +17,7 @@ import {
   getContactMessages,
   markMessageRead,
   replyToMessage,
+  adminForceGenerateMeeting,
 } from '../../services/admin';
 import { cancelBooking, getTutorById } from '../../services/tutors';
 import { APP_NAME } from '../../config';
@@ -262,6 +263,20 @@ export const AdminDashboard = () => {
       loadOverview();
     } catch (e) {
       setErr(e.message || 'Zmiana roli nie powiodła się.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleForceGenerateMeeting = async (bookingId) => {
+    setBusy(`zoom-${bookingId}`);
+    setErr('');
+    try {
+      await adminForceGenerateMeeting(bookingId);
+      await loadBookings();
+      setSuccessMsg('✅ Link Zoom został wygenerowany.');
+    } catch (e) {
+      setErr(e.message || 'Nie udało się wygenerować linku Zoom.');
     } finally {
       setBusy(null);
     }
@@ -535,7 +550,7 @@ export const AdminDashboard = () => {
                             >
                               Termin / status
                             </button>
-                            {b.session && (
+                            {b.session ? (
                               <button
                                 type="button"
                                 className={`${BTN_SECONDARY} ml-1`}
@@ -550,6 +565,18 @@ export const AdminDashboard = () => {
                               >
                                 Link
                               </button>
+                            ) : (
+                              b.status !== 'cancelled' && (
+                                <button
+                                  type="button"
+                                  className={`${BTN_SECONDARY} ml-1 border-violet-500/30 text-violet-300 hover:text-white hover:border-violet-400/50`}
+                                  disabled={busy === `zoom-${b.id}`}
+                                  onClick={() => handleForceGenerateMeeting(b.id)}
+                                  title="Wymuś wygenerowanie linku Zoom (admin)"
+                                >
+                                  {busy === `zoom-${b.id}` ? '…' : 'Generuj Zoom'}
+                                </button>
+                              )
                             )}
                           </td>
                         </tr>

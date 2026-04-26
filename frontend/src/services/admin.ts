@@ -53,3 +53,8 @@ export const markMessageRead = (id: number) =>
 
 export const replyToMessage = (id: number, replyMessage: string) =>
   api.post(`/contact/messages/${id}/reply`, { reply_message: replyMessage });
+
+// ─── Meeting force-generate (admin only) ──────────────────────────────────
+
+export const adminForceGenerateMeeting = (bookingId: number) =>
+  api.post(`/meetings/${bookingId}/force`, {});

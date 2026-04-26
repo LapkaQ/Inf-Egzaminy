@@ -1,7 +1,9 @@
 """
 Router do zarządzania spotkaniami Zoom.
 Umożliwia ręczne generowanie/regenerowanie linku do spotkania.
+Link jest generowany automatycznie 10 minut przed lekcją (lub wcześniej przez admina).
 """
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from core.security import get_current_user
@@ -15,6 +17,8 @@ from core.config import settings
 
 router = APIRouter(prefix="/meetings", tags=["Meetings (Zoom)"])
 
+ZOOM_WINDOW_MINUTES = 10  # link dostępny tyle minut przed lekcją
+
 
 def _require_zoom():
     """Sprawdza czy Zoom jest skonfigurowany – jeśli nie, wyswietl blad 503."""
@@ -25,35 +29,8 @@ def _require_zoom():
         )
 
 
-@router.post(
-    "/{booking_id}",
-    response_model=MeetingCreateResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def generate_meeting_for_booking(
-    booking_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Ręcznie generuje (lub regeneruje) link Zoom do istniejącej rezerwacji.
-    Może być użyty gdy automatyczne generowanie nie zadziałało,
-    lub gdy tutor chce odświeżyć link.
-    """
-    _require_zoom()
-
-    booking = db.query(Booking).filter(Booking.id == booking_id).first()
-    if not booking:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rezerwacja nie istnieje.")
-
-    # Autoryzacja – tylko uczeń, tutor lub admin
-    if current_user.id not in [booking.student_id, booking.tutor_id] and current_user.role != UserRole.admin:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Brak uprawnień.")
-
-    if booking.status == BookingStatus.cancelled:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nie można wygenerować spotkania dla anulowanej rezerwacji.")
-
-    # Jeśli jest stara sesja ze starym Zoom meetingiem – usuń ją
+def _do_create_zoom_session(db: Session, booking: Booking, topic_suffix: str = "") -> MeetingCreateResponse:
+    """Wspólna logika: usuwa starą sesję i tworzy nową na Zoom."""
     existing_session = db.query(MeetingSession).filter(MeetingSession.booking_id == booking.id).first()
     if existing_session:
         if existing_session.zoom_meeting_id:
@@ -61,9 +38,8 @@ def generate_meeting_for_booking(
         db.delete(existing_session)
         db.flush()
 
-    # Utwórz nowe spotkanie na Zoom
     duration = int((booking.end_time - booking.start_time).total_seconds() / 60)
-    topic = f"Korepetycje – lekcja #{booking.id}"
+    topic = f"Korepetycje – lekcja #{booking.id}{topic_suffix}"
 
     try:
         zoom_data = create_zoom_meeting(
@@ -94,6 +70,85 @@ def generate_meeting_for_booking(
         zoom_meeting_id=zoom_data["meeting_id"],
         password=zoom_data["password"],
     )
+
+
+@router.post(
+    "/{booking_id}",
+    response_model=MeetingCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def generate_meeting_for_booking(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Generuje (lub regeneruje) link Zoom do istniejącej rezerwacji.
+    Dla uczniów i korepetytorów dostępne tylko w oknie 10 minut przed lekcją.
+    Administratorzy mogą skorzystać z endpointu /force.
+    """
+    _require_zoom()
+
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rezerwacja nie istnieje.")
+
+    # Autoryzacja – tylko uczeń, tutor lub admin
+    if current_user.id not in [booking.student_id, booking.tutor_id] and current_user.role != UserRole.admin:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Brak uprawnień.")
+
+    if booking.status == BookingStatus.cancelled:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nie można wygenerować spotkania dla anulowanej rezerwacji.")
+
+    # ── Sprawdzenie okna czasowego (dla wszystkich niż admin) ─────────────────
+    if current_user.role != UserRole.admin:
+        now = datetime.now(timezone.utc)
+        start = booking.start_time
+        if start.tzinfo is None:
+            start = start.replace(tzinfo=timezone.utc)
+        minutes_until = (start - now).total_seconds() / 60
+        if minutes_until > ZOOM_WINDOW_MINUTES:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    f"Link Zoom zostanie wygenerowany {ZOOM_WINDOW_MINUTES} minut przed lekcją. "
+                    f"Pozostało jeszcze {int(minutes_until) - ZOOM_WINDOW_MINUTES} min."
+                ),
+            )
+
+    return _do_create_zoom_session(db, booking)
+
+
+@router.post(
+    "/{booking_id}/force",
+    response_model=MeetingCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def force_generate_meeting(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    [ADMIN] Wymusza natychmiastowe wygenerowanie linku Zoom niezależnie od czasu do lekcji.
+    Dostępne wyłącznie dla administratorów.
+    """
+    _require_zoom()
+
+    if current_user.role != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Tylko administrator może wymusić wygenerowanie linku przed oknem czasowym.",
+        )
+
+    booking = db.query(Booking).filter(Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rezerwacja nie istnieje.")
+
+    if booking.status == BookingStatus.cancelled:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nie można wygenerować spotkania dla anulowanej rezerwacji.")
+
+    return _do_create_zoom_session(db, booking, topic_suffix=" [admin]")
 
 
 @router.get(
