@@ -68,11 +68,13 @@ export const Navbar = () => {
 
         <div className="flex items-center justify-end gap-3 min-w-0">
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-xs font-bold">
-                {user?.name?.charAt(0)?.toUpperCase()}
+            <div className="flex items-center gap-2">
+              <div className='flex justify-center items-center gap-1'>
+                <div className="w-8 h-8 aspect-square rounded-full bg-gradient-to-br from-accent to-accent-2 flex items-center justify-center text-white text-xs font-bold">
+                  {user?.name?.charAt(0)?.toUpperCase()}
+                </div>
+                <span className="text-subtle text-sm">{user?.name}</span>
               </div>
-              <span className="text-subtle text-sm">{user?.name}</span>
               <button
                 onClick={handleLogout}
                 className="px-4 py-2 rounded-lg border border-line-hi text-subtle text-sm font-medium hover:text-white hover:border-white/20 hover:bg-white/[0.04] transition-all duration-200 cursor-pointer bg-transparent font-sans"
