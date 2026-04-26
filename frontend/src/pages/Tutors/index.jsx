@@ -4,7 +4,7 @@ import { getAllTutors } from '../../services/tutors'
 
 const GRAD = 'bg-gradient-to-br from-accent to-accent-2'
 const TAG =
-  'px-2.5 py-1 bg-surface-3 border border-line-hi rounded-md text-[0.73rem] text-subtle font-medium'
+  'px-2.5 py-1 bg-surface-3 border border-line-hi rounded-md text-[0.73rem] text-subtle font-medium leading-5 '
 const FILTERS = ['Wszyscy', 'INF03', 'INF04']
 
 // Setup IntersectionObserver on a container — adds .visible to .card-reveal children
