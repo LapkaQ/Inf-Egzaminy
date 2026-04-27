@@ -105,7 +105,7 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
 
     # ── Wyślij mail z przypomnieniem o płatności (w tle) ──
     try:
-        from services.mail_service import send_payment_reminder_email
+        from services.mail_service import send_payment_reminder_email, send_tutor_new_booking_email
         payment_url = f"{settings.FRONTEND_APP_URL}/payment/{new_booking.id}"
 
         # Pobierz imiona
@@ -120,6 +120,7 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
         lesson_date = slot.start_time.strftime("%d.%m.%Y (%A)")
         lesson_time = f"{slot.start_time.strftime('%H:%M')} – {slot.end_time.strftime('%H:%M')}"
 
+        # Mail do ucznia
         send_payment_reminder_email(
             recipient_email=current_user.email,
             name=current_user.name,
@@ -129,8 +130,19 @@ def create_booking(db: Session, current_user: User, booking_data: BookingCreate)
             amount=amount,
             payment_link=payment_url,
         )
+
+        # Mail do korepetytora
+        if tutor_user and tutor_user.email:
+            send_tutor_new_booking_email(
+                recipient_email=tutor_user.email,
+                tutor_name=tutor_name,
+                student_name=current_user.name,
+                lesson_date=lesson_date,
+                lesson_time=lesson_time,
+            )
+            
     except Exception as e:
-        logger.error("Failed to send payment reminder email for booking %s: %s", new_booking.id, e)
+        logger.error("Failed to send emails for new booking %s: %s", new_booking.id, e)
 
     # ── Zwracamy rozszerzoną odpowiedź ──
     return {

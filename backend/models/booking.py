@@ -25,6 +25,7 @@ class Booking(Base):
     end_time = Column(DateTime, nullable=False)
 
     status = Column(Enum(BookingStatus), default=BookingStatus.awaiting_payment)
+    is_reminder_sent = Column(Boolean, default=False)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

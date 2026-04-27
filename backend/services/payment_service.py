@@ -132,6 +132,30 @@ def emulate_payment(db: Session, booking_id: int, current_user_id: int) -> Payme
     db.commit()
     db.refresh(payment)
 
+    # ── Wyślij maila do korepetytora ──
+    try:
+        from services.mail_service import send_tutor_payment_confirmed_email
+        from models.user import User
+
+        tutor_user = db.query(User).filter(User.id == booking.tutor_id).first()
+        student_user = db.query(User).filter(User.id == booking.student_id).first()
+        
+        if tutor_user and tutor_user.email:
+            tutor_name = tutor_user.name
+            student_name = student_user.name if student_user else f"Uczeń #{booking.student_id}"
+            lesson_date = booking.start_time.strftime("%d.%m.%Y (%A)")
+            lesson_time = f"{booking.start_time.strftime('%H:%M')} – {booking.end_time.strftime('%H:%M')}"
+
+            send_tutor_payment_confirmed_email(
+                recipient_email=tutor_user.email,
+                tutor_name=tutor_name,
+                student_name=student_name,
+                lesson_date=lesson_date,
+                lesson_time=lesson_time,
+            )
+    except Exception as e:
+        logger.error("Failed to send tutor payment confirmed email for booking %s: %s", booking_id, e)
+
     logger.info("Emulated payment completed for booking %s, amount %s PLN", booking_id, payment.amount)
     return payment
 

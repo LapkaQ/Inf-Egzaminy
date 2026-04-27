@@ -2,7 +2,19 @@ from fastapi import FastAPI, APIRouter
 from routers import auth, tutors, availability, bookings, sessions, stats, schedule, admin, meetings, contact, payments
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Inf-Egzaminy.pl API", version="1.0.0")
+from contextlib import asynccontextmanager
+import asyncio
+from services.background_tasks import lesson_reminder_task
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Uruchamiamy task w tle
+    task = asyncio.create_task(lesson_reminder_task())
+    yield
+    # Anulujemy przy zamykaniu aplikacji
+    task.cancel()
+
+app = FastAPI(title="Inf-Egzaminy.pl API", version="1.0.0", lifespan=lifespan)
 
 # CORS must be added BEFORE routers
 app.add_middleware(

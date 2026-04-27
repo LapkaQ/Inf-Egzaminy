@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+    <div style="max-w: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: #3b82f6; margin-top: 0;">Lekcja zaczyna się za 10 minut! 🎥</h2>
+        <p>Cześć <strong>{{ user_name }}</strong>,</p>
+        <p>Twoja lekcja z <strong>{{ other_name }}</strong> rozpoczyna się za 10 minut.</p>
+        
+        <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border: 1px solid #e2e8f0;">
+            <p style="margin: 5px 0;"><strong>Godziny:</strong> {{ lesson_time }}</p>
+        </div>
+
+        <p>Link do spotkania (Zoom) jest już dostępny.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ meeting_link }}" style="background-color: #7c3aed; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; display: inline-block;">
+                Dołącz do spotkania
+            </a>
+        </div>
+        
+        <p>Możesz także znaleźć link bezpośrednio w swoim <a href="{{ dashboard_link }}" style="color: #7c3aed;">panelu w aplikacji</a>.</p>
+
+        <p style="color: #64748b; font-size: 13px; margin-top: 30px;">
+            Powodzenia!<br>Zespół {{ app_name }}
+        </p>
+    </div>
+</body>
+</html>

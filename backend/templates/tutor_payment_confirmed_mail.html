@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
+    <div style="max-w: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: #10b981; margin-top: 0;">Lekcja opłacona! 💰</h2>
+        <p>Cześć <strong>{{ tutor_name }}</strong>,</p>
+        <p>Uczeń <strong>{{ student_name }}</strong> właśnie opłacił swoją rezerwację.</p>
+        
+        <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 20px 0; border: 1px solid #e2e8f0;">
+            <p style="margin: 5px 0;"><strong>Data:</strong> {{ lesson_date }}</p>
+            <p style="margin: 5px 0;"><strong>Godziny:</strong> {{ lesson_time }}</p>
+        </div>
+
+        <p>Rezerwacja została potwierdzona. Dołącz do spotkania o wyznaczonej godzinie przez swój <a href="{{ dashboard_link }}" style="color: #7c3aed;">panel korepetytora</a>.</p>
+
+        <p style="color: #64748b; font-size: 13px; margin-top: 30px;">
+            Pozdrawiamy,<br>Zespół {{ app_name }}
+        </p>
+    </div>
+</body>
+</html>

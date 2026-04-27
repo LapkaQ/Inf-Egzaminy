@@ -140,3 +140,69 @@ def send_payment_reminder_email(
         },
     )
     send_email(recipient_email, f"💳 Opłać lekcję – {lesson_date} – {settings.APP_NAME}", body)
+
+
+def send_tutor_new_booking_email(
+    recipient_email: str,
+    tutor_name: str,
+    student_name: str,
+    lesson_date: str,
+    lesson_time: str,
+):
+    """Send an email to the tutor when a new booking is made."""
+    body = render_template(
+        "tutor_new_booking_mail.html",
+        {
+            "tutor_name": tutor_name,
+            "student_name": student_name,
+            "lesson_date": lesson_date,
+            "lesson_time": lesson_time,
+            "app_name": settings.APP_NAME,
+            "dashboard_link": f"{settings.FRONTEND_APP_URL}/dashboard",
+        },
+    )
+    send_email(recipient_email, f"📅 Nowa rezerwacja – {lesson_date} – {settings.APP_NAME}", body)
+
+
+def send_tutor_payment_confirmed_email(
+    recipient_email: str,
+    tutor_name: str,
+    student_name: str,
+    lesson_date: str,
+    lesson_time: str,
+):
+    """Send an email to the tutor when a booking is paid."""
+    body = render_template(
+        "tutor_payment_confirmed_mail.html",
+        {
+            "tutor_name": tutor_name,
+            "student_name": student_name,
+            "lesson_date": lesson_date,
+            "lesson_time": lesson_time,
+            "app_name": settings.APP_NAME,
+            "dashboard_link": f"{settings.FRONTEND_APP_URL}/dashboard",
+        },
+    )
+    send_email(recipient_email, f"💰 Opłacona rezerwacja – {lesson_date} – {settings.APP_NAME}", body)
+
+
+def send_lesson_starting_email(
+    recipient_email: str,
+    user_name: str,
+    other_name: str,
+    lesson_time: str,
+    meeting_link: str,
+):
+    """Send an email 10 minutes before the lesson starts."""
+    body = render_template(
+        "lesson_starting_mail.html",
+        {
+            "user_name": user_name,
+            "other_name": other_name,
+            "lesson_time": lesson_time,
+            "meeting_link": meeting_link,
+            "app_name": settings.APP_NAME,
+            "dashboard_link": f"{settings.FRONTEND_APP_URL}/dashboard",
+        },
+    )
+    send_email(recipient_email, f"🎥 Lekcja rozpoczyna się za 10 minut! – {settings.APP_NAME}", body)
