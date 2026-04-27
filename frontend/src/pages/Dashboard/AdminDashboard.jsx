@@ -31,7 +31,7 @@ const BTN_DANGER =
   'px-3 py-1.5 rounded-lg text-red-400 text-xs font-medium hover:bg-red-500/10 transition-all cursor-pointer bg-transparent border-0 font-sans';
 
 const bookingStatusLabel = (s) =>
-  ({ pending: 'Oczekuje', confirmed: 'Potwierdzone', cancelled: 'Anulowane' }[s] || s);
+  ({ pending: 'Oczekuje', confirmed: 'Potwierdzone', cancelled: 'Anulowane', awaiting_payment: 'Nieopłacone' }[s] || s);
 const sessionStatusLabel = (s) =>
   ({ scheduled: 'Zaplanowana', completed: 'Zakończona' }[s] || s);
 
