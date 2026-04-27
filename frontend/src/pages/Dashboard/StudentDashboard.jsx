@@ -103,39 +103,6 @@ export const StudentDashboard = () => {
           </p>
         </div>
 
-        {/* Unpaid bookings alert */}
-        {unpaid.length > 0 && (
-          <div className="mb-6 animate-fade-up [animation-delay:0.05s]">
-            <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">💳</span>
-                <h3 className="font-bold text-[0.95rem] text-orange-400">Lekcje do opłacenia</h3>
-              </div>
-              <div className="flex flex-col gap-2">
-                {unpaid.map(b => {
-                  const { date, time } = formatDt(b.start_time);
-                  const { time: endTime } = formatDt(b.end_time);
-                  const amount = b.payment?.amount;
-                  return (
-                    <div key={b.id} className="flex items-center justify-between bg-surface/80 border border-line rounded-xl px-4 py-3">
-                      <div>
-                        <div className="font-semibold text-sm capitalize">{date}</div>
-                        <div className="text-[0.74rem] text-subtle">{time} – {endTime}{amount ? <> · <span className="text-orange-400 font-semibold">{amount} zł</span></> : ''}</div>
-                      </div>
-                      <button
-                        onClick={() => navigate(`/payment/${b.id}`)}
-                        className={`px-5 py-2 rounded-xl ${GRAD} text-white text-[0.78rem] font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.35)] transition-all duration-200`}
-                      >
-                        Opłać →
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Upcoming bookings */}
         <div className="mb-8 animate-fade-up [animation-delay:0.1s]">
           <div className="flex justify-between items-center mb-4">
@@ -187,14 +154,6 @@ export const StudentDashboard = () => {
                         <span className={`px-2.5 py-1 rounded-full border text-[0.7rem] font-semibold ${statusColor(b.status)}`}>
                           {statusLabel(b.status)}
                         </span>
-                        {isAwaitingPayment && (
-                          <button
-                            onClick={() => navigate(`/payment/${b.id}`)}
-                            className={`px-3 py-1.5 rounded-lg ${GRAD} text-white text-[0.72rem] font-semibold cursor-pointer border-0 font-sans hover:-translate-y-0.5 transition-all duration-200`}
-                          >
-                            Opłać
-                          </button>
-                        )}
                         {b.status !== 'cancelled' && b.status !== 'confirmed' && (
                           <button
                             onClick={() => handleCancel(b.id)}
@@ -235,9 +194,14 @@ export const StudentDashboard = () => {
                         return (
                           <div className="px-4 pb-4">
                             <div className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-surface-2 border border-line text-subtle text-[0.78rem] font-medium">
-                              Link Zoom dostępny za {minsToWindow > 60
-                                ? `${Math.floor(minsToWindow / 60)} h ${minsToWindow % 60} min`
-                                : `${minsToWindow} min`}
+                              Link Zoom dostępny za {(() => {
+                                if (minsToWindow < 60) return `${minsToWindow} min`;
+                                const hours = Math.floor(minsToWindow / 60);
+                                if (hours < 24) return `${hours} h ${minsToWindow % 60} min`;
+                                const days = Math.floor(hours / 24);
+                                const remainingHours = hours % 24;
+                                return `${days === 1 ? '1 dzień' : `${days} dni`} ${remainingHours > 0 ? `${remainingHours} h` : ''}`.trim();
+                              })()}
                             </div>
                           </div>
                         );
