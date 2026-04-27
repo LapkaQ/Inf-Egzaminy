@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from models.booking import BookingStatus
 from models.payment import PaymentStatus
+from schemas.user import UserResponse
 
 class BookingCreate(BaseModel):
     availability_slot_id: int
@@ -35,6 +36,8 @@ class BookingResponse(BaseModel):
     payment: Optional[PaymentBriefResponse] = None
     requires_immediate_payment: Optional[bool] = None
     payment_url: Optional[str] = None
+    tutor: Optional[UserResponse] = None
+    student: Optional[UserResponse] = None
     
     class Config:
         from_attributes = True

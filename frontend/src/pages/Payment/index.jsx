@@ -212,7 +212,7 @@ export const PaymentPage = () => {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-subtle">Korepetytor</span>
-                <span className="font-semibold">T{booking.tutor_id}</span>
+                <span className="font-semibold">{booking.tutor?.name || `T${booking.tutor_id}`}</span>
               </div>
             </div>
 
