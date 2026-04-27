@@ -102,12 +102,12 @@ async def login(
     user = db.query(User).filter(User.email == user_credentials.username).first()
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Nieprawidłowe dane logowania"
         )
 
     if not verify_password(user_credentials.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials"
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Nieprawidłowe dane logowania"
         )
 
     if not user.is_verified:
